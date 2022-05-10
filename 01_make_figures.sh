@@ -2,11 +2,13 @@
 
 py=python3
 jl=julia
-
+bs=bash
+srcdir=src
 
 plot_codes=(
-    $jl plot_reduced_stommel.jl
-    $jl plot_bifurcation_analytical.jl
+    $jl $srcdir/plot_reduced_stommel.jl
+    $jl $srcdir/plot_bifurcation_analytical.jl
+    $bs $srcdir/plot_ZATOM_bifurcation.sh
 )
 
 # Some code to download data and extract them
