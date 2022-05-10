@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-python3 src/plot_scans_pretty_ver4.py --folder \
+python3 src/plot_scans_and_snapshots.py --folder \
    ./data/continuation_data/batch_std50/output_redo_tanh/CM_xi-0000150_pos/lb8  \
    ./data/continuation_data/batch_std50/output_redo_tanh/CM_xi-0000100_pos/lb8  \
    ./data/continuation_data/batch_std50/output_redo_tanh/CM_xi00000000_pos/lb8  \
