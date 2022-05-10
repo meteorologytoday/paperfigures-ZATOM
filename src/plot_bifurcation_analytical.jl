@@ -9,7 +9,6 @@ include("detect_ranges.jl")
 println("Loading PyPlot")
 using PyPlot
 plt = PyPlot
-plt.ion()
 println("Done")
 
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
@@ -59,13 +58,6 @@ end
 ax.set_xlim([0, 3])
 ax.set_ylim([-1, 4.5])
 ax.legend(loc="center right")
-fig.savefig("figure-stommel_bifur.png", dpi=300)
+fig.savefig("figures/figure-stommel_bifur.png", dpi=300)
 
-#fig, ax = plt.subplots(1, 1)
-#ξs = collect(range(-5, 5, length=501))
-#Δ = (1 + coe.ν * p)
-#ax.plot(ξs, )
-
-
-
-sleep(500)
+plt.show()

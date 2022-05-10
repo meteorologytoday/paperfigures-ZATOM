@@ -1,8 +1,8 @@
 using Formatting
-println("Loading PyPlot")
+println("Loading PyPlot...")
 using PyPlot
 plt = PyPlot
-println("done")
+println("Done")
 
 using Roots
 
@@ -93,7 +93,7 @@ ax.grid()
 ax.set_ylim([-2, 1.5])
 ax.set_xlim([-0.1, 1.4])
 
-fig.savefig("figure-reduced_stommel.png", dpi=300)
+fig.savefig("figures/figure-reduced_stommel.png", dpi=300)
 
 plt.show()
 
