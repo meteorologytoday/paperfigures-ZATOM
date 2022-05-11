@@ -8,7 +8,10 @@ srcdir=src
 plot_codes=(
     $jl $srcdir/plot_reduced_stommel.jl
     $jl $srcdir/plot_bifurcation_analytical.jl
-    $bs $srcdir/plot_ZATOM_bifurcation.sh
+    $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
+    $bs $srcdir/plot_ZATOM_bifurcation_basin_width.sh
+    $bs $srcdir/plot_ZATOM_bifurcation_Kh.sh
+    $bs $srcdir/plot_ZATOM_bifurcation_cva.sh
 )
 
 # Some code to download data and extract them

@@ -188,8 +188,8 @@ print("Data loaded. Plotting now...")
 
 colors = [
     'red',
-    'orange',
-    'green', 
+    'darkorange',
+    'darkgreen', 
     'blue',
     'violet',
     'black',
@@ -233,11 +233,10 @@ for i in range(len(legends)):
 
 
         if legend_coor == True:
-            kw_label["color"] = "black"
         
             _x = args.legend_coor[i*2]
             _y = args.legend_coor[i*2+1]
-            ax[0, 0].text(_x, _y, legends[i], color="black", size=15, ha="center", va="center")
+            ax[0, 0].text(_x, _y, legends[i], color=colors[i], size=15, ha="center", va="center")
    
 
         ax[0, 0].plot(Q, psi_measure, zorder=1, linestyle=linestyle, **kw_label)
