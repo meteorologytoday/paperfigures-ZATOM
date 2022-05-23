@@ -11,5 +11,6 @@ python3 src/plot_scans_and_snapshots.py --folder \
                   0.0870 10.38 \
                   0.1543  8.85 \
                   0.0800  7.43 \
-    --F-rng -0.01 0.30 --psi-rng 5 12.5 --metric max --output-bifur "figures/bifurcation_Kh.png"
+    --colors "blue" "darkorange" "red" "darkgreen" \
+    --F-rng -0.01 0.36 --psi-rng 5 12.5 --metric max --output-bifur "figures/bifurcation_Kh.png"
             

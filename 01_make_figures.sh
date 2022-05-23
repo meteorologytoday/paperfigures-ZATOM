@@ -14,6 +14,11 @@ plot_codes=(
     $bs $srcdir/plot_ZATOM_bifurcation_cva.sh
 )
 
+plot_codes=(
+    $bs $srcdir/plot_ZATOM_bifurcation_typeA.sh
+)
+
+
 # Some code to download data and extract them
 
 

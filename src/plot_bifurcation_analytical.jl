@@ -14,8 +14,8 @@ println("Done")
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
 
-ax.set_xlabel(L"p")
-ax.set_ylabel(L"\psi")
+ax.set_xlabel(L"p", fontsize=25)
+ax.set_ylabel(L"\psi", fontsize=25)
 ax.grid()
 
 cnt = 1

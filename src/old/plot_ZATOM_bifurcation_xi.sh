@@ -11,9 +11,11 @@ python3 src/plot_scans_and_snapshots.py --folder \
                   0.1504 8.216 \
                   0.1091 7.760 \
                   0.0232 7.809 \
-    --F-rng -0.01 0.3 --psi-rng 5 10 --metric max --output-bifur "figures/std50_bifurcation.png" \
+    --colors "darkorange" "red" "darkgreen" "blue" \
+    --F-rng -0.01 0.36 --psi-rng 5 10 --metric max --output-bifur "figures/bifurcation_xi.png" \
     --marks 0.0      9.468 \
             0.2376   7.916 \
             0.2376   6.460 \
-    --output-marks "figures/std50_standard_marks.png"
+            0.3051   6.043 \
+    --output-marks "figures/bifurcation_xi_marks.png"
             
