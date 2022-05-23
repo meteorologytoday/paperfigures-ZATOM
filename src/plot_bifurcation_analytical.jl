@@ -3,7 +3,7 @@ include("detect_ranges.jl")
 
 
 ξs = [-1.0, -0.5, 0.0, 5.0]
-
+ψ0 = 1.0
 ψ_rng = [-4, 6]
 
 println("Loading PyPlot")
@@ -29,7 +29,7 @@ for ξ in ξs
     )
 
     ψs = collect(range(ψ_rng..., length=1001))
-    ps = (1 .+ abs.(ψs)) .* (1 .- ψs / coe.μ) ./ ( 1 .+ coe.ν * ξ / coe.μ * ( 1 .+ abs.(ψs)) )
+    ps = (1 .+ abs.(ψs)) .* (1 .- (ψs .- ψ0 ) / coe.μ) ./ ( 1 .+ coe.ν * ξ / coe.μ * ( 1 .+ abs.(ψs)) )
 
     d_dydτ_dy = - ( 1 .+ abs.(ψs) ) + coe.μ * sign.(ψs) .* (1 .- (ψs .+ coe.ν * ps * ξ) / coe.μ)
     stable = d_dydτ_dy .< 0
@@ -58,6 +58,6 @@ end
 ax.set_xlim([0, 3])
 ax.set_ylim([-1, 4.5])
 ax.legend(loc="center right")
-fig.savefig("figures/figure-stommel_bifur.png", dpi=300)
+#fig.savefig("figures/figure-stommel_bifur.png", dpi=300)
 
 plt.show()
