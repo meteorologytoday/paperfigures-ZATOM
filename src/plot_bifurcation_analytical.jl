@@ -3,7 +3,7 @@ include("detect_ranges.jl")
 
 
 ξs = [-1.0, -0.5, 0.0, 5.0]
-ψ0 = 1.0
+ψ0 = 0.0
 ψ_rng = [-4, 6]
 
 println("Loading PyPlot")
