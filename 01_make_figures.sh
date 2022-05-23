@@ -16,6 +16,7 @@ plot_codes=(
 
 plot_codes=(
     $bs $srcdir/plot_ZATOM_bifurcation_typeA.sh
+    $bs $srcdir/plot_ZATOM_bifurcation_typeB.sh
 )
 
 

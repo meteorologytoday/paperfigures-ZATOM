@@ -13,10 +13,11 @@ python3 src/plot_scans_and_snapshots.py --folder \
     --x-var "gamma" --y-var "psi" \
     --x-rng -0.01 0.6 --y-rng -8 6 --metric fixed --metric-dep 1000.0 --metric-lat 50 \
     --output-bifur "figures/bifurcation_xi_typeA.png" \
-    --marks 0.0        5.360  \
+    --marks 0.0        5.360 \
             0.4551    -2.604 \
-            0.4551    -5.437 \
-            0.4551     4.944 \
+            0.4551    -5.436 \
+            0.4551     4.943 \
+    --marks-pos "right" "right" "bottom" "top"\
     --output-marks "figures/bifurcation_xi_marks_typeA.png" \
-    --residue-threshold 1e-9
+    --residue-threshold 3e-10
             

@@ -53,6 +53,7 @@ parser.add_argument('--metric', type=str, default="max", choices=["max", "mean",
 parser.add_argument('--metric-dep', type=float, default=1000.0)
 parser.add_argument('--metric-lat', type=float, default=50.0)
 parser.add_argument('--marks', nargs='*', type=float, default=[])
+parser.add_argument('--marks-pos', nargs='*', type=str, default=[])
 parser.add_argument('--legend-coor', nargs='*', type=float, default=[])
 parser.add_argument('--residue-threshold', type=float, default=1e-12)
 args = parser.parse_args()
@@ -94,7 +95,7 @@ if len(args.marks) % 2 != 0:
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Psib", "Q", "be", "bw", "we", "res", "stable", "ui", "ww"]
+loaded_varnames = ["Psib", "chi", "Q", "be", "bw", "res", "stable"]
 for i, folder in enumerate(folders):
 
     print("Loading the folder: %s" % (folder,))
@@ -110,6 +111,8 @@ for i, folder in enumerate(folders):
         continue
  
     _data["bw_bnd"] = _data["be"] + 2 * ( _data["bw"] - _data["be"] )
+    #_data["bw_bnd"] = _data["bw"]
+# + 2 * ( _data["bw"] - _data["be"] )
     data.append(_data)
 
     print("Number of records: %d" % (len(_data["Q"]))) 
@@ -196,7 +199,7 @@ for k in range(nmarkpairs):
     print("Search for the marker case closest to : (gamma, psi) = (%f, %f)" % (args.marks[k*2], args.marks[k*2+1]))
     for i, d in enumerate(data):
         for s in range(len(d[x_var])):
-            _dist = dist(d[x_var][s], d["y"][s], args.marks[k*2], args.marks[k*2+1])
+            _dist = dist(d[x_var][s]*10, d["y"][s], args.marks[k*2]*10, args.marks[k*2+1])
             if _dist < shortest_dist[k]:
                 shortest_dist[k] = _dist
                 mark_index[k, 0] = i
@@ -280,7 +283,31 @@ for k in range(nmarkpairs):
     d = data[mark_index[k,0]]
     s = mark_index[k, 1]
     ax[0,0].scatter(d[x_var][s], d["y"][s], s=80, marker="*", c="yellow", edgecolor="k", zorder=50)
-    ax[0,0].text(d[x_var][s], d["y"][s] + 0.08, "123456789"[k], size=15, va="bottom", ha="center")
+
+    pos = args.marks_pos[k]
+
+    if pos == "top": 
+        ha = "center"
+        va = "bottom"
+        offset_x = 0.0
+        offset_y = 1.0
+    elif pos == "right": 
+        ha = "left"
+        va = "center"
+        offset_x = 1.0
+        offset_y = 0.0
+    elif pos == "bottom": 
+        ha = "center"
+        va = "top"
+        offset_x = 0.0
+        offset_y = -1.5
+    elif pos == "left": 
+        ha = "right"
+        va = "center"
+        offset_x = -1.0
+        offset_y = 0.0
+
+    ax[0,0].text(d[x_var][s] + offset_x * 0.01, d["y"][s] + offset_y * 0.13, "123456789"[k], size=15, va=va, ha=ha)
 
 # if True then it is labeled directly on the specified coordinate
 if legend_coor == False:
@@ -334,9 +361,6 @@ if nmarkpairs != 0:
     b_rng[0] = np.floor(b_rng[0] * b_factor / 2) * 2
     b_rng[1] = np.floor(b_rng[1] * b_factor / 2) * 2
 
-
-    fig2, ax2 = plt.subplots(3, nmarkpairs, sharey=False, sharex=True, figsize=(4*nmarkpairs, 4*3), gridspec_kw={'bottom':0.2}, squeeze=False)
-   
     levels_b = np.arange(b_rng[0], b_rng[1], 2)
     #levels_b = np.arange(.24, .28, 0.005)
     levels_ui = np.arange(-100, 100, 0.5)
@@ -344,43 +368,48 @@ if nmarkpairs != 0:
     levels_ww = np.arange(-100, 100, .5)
     levels_psi = np.arange(-20, 20, 1)
     dwf_color = (0.6, 0.75, 1.0)
+
+    b_cmap = "bwr"
+    
+    fig2 = plt.figure(figsize=(4*nmarkpairs+1, 4*3)) 
+    gs0 = gridspec.GridSpec(3, nmarkpairs+1, figure=fig, width_ratios=nmarkpairs * [1] + [0.05], wspace=0.3)
+    #fig2, ax2 = plt.subplots(3, nmarkpairs, sharey=False, sharex=True, figsize=(4*nmarkpairs, 4*3), gridspec_kw={'bottom':0.2}, squeeze=False) 
  
     for k in range(nmarkpairs):
+ 
+        print("Plotting the %d-th marker streamfunction" % k)
+        d = data[mark_index[k,0]]
+        s = mark_index[k, 1]
+    
+        _ax = [ fig2.add_subplot(gs0[i, k]) for i in range(3) ]
       
         be_plot = ( d["be"][s, :, :].transpose() - b_neworigin ) * b_factor 
         bw_plot = ( d["bw_bnd"][s, :, :].transpose() - b_neworigin ) * b_factor 
 
-        print("Max and min of be: %.2e ; %.2e" % (np.amax(be_plot), np.amin(be_plot)))
-        print("Max and min of bw: %.2e ; %.2e" % (np.amax(bw_plot), np.amin(bw_plot)))
+        #print("Max and min of be: %.2e ; %.2e" % (np.amax(be_plot), np.amin(be_plot)))
+        #print("Max and min of bw: %.2e ; %.2e" % (np.amax(bw_plot), np.amin(bw_plot)))
 
-        print("Max and min of bw: %.2e ; %.2e" % (np.amax(d["bw"]), np.amin(d["bw"])))
+        #print("Max and min of bw: %.2e ; %.2e" % (np.amax(d["bw"]), np.amin(d["bw"])))
         #print("Max and min of ui: %.2e ; %.2e" % (np.amax(d["ui"]), np.amin(d["ui"])))
         #print("Max and min of we: %.2e ; %.2e" % (np.amax(d["we"]), np.amin(d["we"])))
         #print("Max and min of ww: %.2e ; %.2e" % (np.amax(d["ww"]), np.amin(d["ww"])))
 
-        _ax = ax2[:, k]
-        print("Plotting the %d-th marker streamfunction" % k)
-        d = data[mark_index[k,0]]
-        s = mark_index[k, 1]
-        
+        #_ax = ax2[:, k]
+       
+
         CS = _ax[0].contour(coor["y_V"], plot_z_W, d["Psib"][s, :, :].transpose(), levels_psi, colors="black")
         _ax[0].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=4)
         
-           
-        CS = _ax[1].contour(coor["y_T"], plot_z_W, d["ww"][s, :, :].transpose() * 1e5, levels_ww, colors="red")
-        _ax[1].clabel(CS, CS.levels, inline=True, fmt="%.1f", fontsize=10, inline_spacing=2)
+        b_mappable = _ax[1].contourf(coor["y_T"], plot_z_T, bw_plot, levels_b, cmap=b_cmap, extend='both')
+        CS = _ax[1].contour(coor["y_V"], plot_z_W, d["Psib"][s, :, :].transpose(), levels_psi, colors="black")
+        _ax[1].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=1)
 
-        CS = _ax[1].contour(coor["y_T"], plot_z_T, bw_plot, levels_b, colors="black")
-        _ax[1].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=2)
-        cs_dwf_west = _ax[1].contourf(coor['y_T'], plot_z_T, d['dwf_west'][s, :, :].transpose(), [0, 0.5,1.5], colors=['none', dwf_color])
-
-
-        CS = _ax[2].contour(coor["y_T"], plot_z_W, d["we"][s, :, :].transpose() * 1e5, levels_we, colors="red")
-        _ax[2].clabel(CS, CS.levels, inline=True, fmt="%.1f", fontsize=10, inline_spacing=2)
+        b_mappable = _ax[2].contourf(coor["y_T"], plot_z_T, be_plot, levels_b, cmap=b_cmap, extend="both")
+        CS = _ax[2].contour(coor["y_T"], plot_z_W, d["chi"][s, :, :].transpose(), levels_psi, colors="black")
+        _ax[2].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=1)
         
-        CS = _ax[2].contour(coor["y_T"], plot_z_T, be_plot, levels_b, colors="black")
-        _ax[2].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=2)
-        cs_dwf_east = _ax[2].contourf(coor['y_T'], plot_z_T, d['dwf_east'][s, :, :].transpose(), [0, 0.5,1.5], colors=['none', dwf_color])
+        cs_dwf_west = _ax[1].contourf(coor['y_T'], plot_z_T, d['dwf_west'][s, :, :].transpose(), [0, 0.5,1.5], colors="none", hatches=[None, ".."])
+        cs_dwf_east = _ax[2].contourf(coor['y_T'], plot_z_T, d['dwf_east'][s, :, :].transpose(), [0, 0.5,1.5], colors="none", hatches=[None, ".."])
 
 
         #for _cs in [cs_dwf_east, cs_dwf_west]:
@@ -400,15 +429,24 @@ if nmarkpairs != 0:
 
         for __ax in _ax:
             __ax.set_xticks([20,30,40,50,60])
-            __ax.set_yticks([0, 1, 2, 3, 4])
 
-            if k != 0:
-                __ax.set_yticklabels([""] * len(__ax.get_yticks()))
+        _ax[0].set_yticks([0, 1, 2, 3, 4])
+        _ax[1].set_yticks([0, 0.5, 1])
+        _ax[2].set_yticks([0, 0.5, 1])
+        _ax[1].set_yticklabels(["0", ".5", "1"])
+        _ax[2].set_yticklabels(["0", ".5", "1"])
+
+        if k != 0:
+            __ax.set_yticklabels([""] * len(__ax.get_yticks()))
 
         _ax[0].set_ylim([4.5, 0])
-        _ax[1].set_ylim([1.0, 0])
-        _ax[2].set_ylim([1.0, 0])
+        _ax[1].set_ylim([1, 0])
+        _ax[2].set_ylim([1, 0])
 
+        
+    cax = fig2.add_subplot(gs0[:, -1])
+    plt.colorbar(mappable=b_mappable, cax=cax, cmap=b_cmap, orientation="vertical", ticks=[], label="$b_w^*$ and $b_e$ [$\\mathrm{m}^2 / \\mathrm{s}$]")
+    
     if args.output_marks != "":
         fig2.savefig(args.output_marks, dpi=300)
 
