@@ -93,7 +93,7 @@ for (i, θ) in enumerate([ 0.5, 0 ])
     ax.fill_betweenx(ξs, p_left_bnd, p_right_bnd, facecolor=facecolor, edgecolor=edgecolor, alpha=0.8, linewidth=1, zorder=10, label="\$\\theta=$θ\$")
 end
 ax.legend(loc="lower right")
-ax.set_title("Multiple equilibria phase diagram")
+ax.set_title("(a) Multiple equilibria phase diagram of Stommel's two-box model")
 fig.savefig("figures/figure-stommel_bifurcation_phase.png", dpi=300)
 
 plt.show()

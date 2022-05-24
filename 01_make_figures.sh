@@ -9,6 +9,7 @@ plot_codes=(
     $jl $srcdir/plot_stommel_dydt.jl
     $jl $srcdir/plot_stommel_bifurcation_analytical.jl
     $jl $srcdir/plot_stommel_bifurcation_phase.jl
+    $jl $srcdir/plot_ZATOM_bifurcation_phase.jl
     $bs $srcdir/plot_ZATOM_bifurcation_typeA.sh
     $bs $srcdir/plot_ZATOM_bifurcation_typeB.sh
 )
@@ -23,7 +24,7 @@ plot_codes=(
 
 mkdir figures
 
-N=$(( ${#plot_codes[@]}  ))
+N=$(( ${#plot_codes[@]} / 2 ))
 echo "We have $N file(s) to run..."
 for i in $( seq 1 $(( ${#plot_codes[@]} / 2 )) ) ; do
     PROG="${plot_codes[$(( (i-1) * 2 + 0 ))]}"
