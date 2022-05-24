@@ -6,18 +6,16 @@ bs=bash
 srcdir=src
 
 plot_codes=(
-    $jl $srcdir/plot_reduced_stommel.jl
-    $jl $srcdir/plot_bifurcation_analytical.jl
-    $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
-    $bs $srcdir/plot_ZATOM_bifurcation_basin_width.sh
-    $bs $srcdir/plot_ZATOM_bifurcation_Kh.sh
-    $bs $srcdir/plot_ZATOM_bifurcation_cva.sh
-)
-
-plot_codes=(
+    $jl $srcdir/plot_stommel_dydt.jl
+    $jl $srcdir/plot_stommel_bifurcation_analytical.jl
+    $jl $srcdir/plot_stommel_bifurcation_phase.jl
     $bs $srcdir/plot_ZATOM_bifurcation_typeA.sh
     $bs $srcdir/plot_ZATOM_bifurcation_typeB.sh
 )
+
+#plot_codes=(
+#    $jl $srcdir/plot_stommel_dydt.jl
+#)
 
 
 # Some code to download data and extract them

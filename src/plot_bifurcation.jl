@@ -157,6 +157,6 @@ for ξ in ξs, use_Θ in [true, false]
 end
 
 ax.legend()
-fig.savefig("figure-stommel_bifur.png", dpi=300)
+fig.savefig("figures/figure-stommel_bifur.png", dpi=300)
 
 sleep(500)

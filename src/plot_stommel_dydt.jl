@@ -23,8 +23,9 @@ p = 1.2
 example_coe = (p, ξ, μ, θ, ν)
 
 
-fig, ax = plt.subplots(1, 1, figsize=(6, 4), constrained_layout=true)
+fig, axes = plt.subplots(2, 1, figsize=(6, 8), constrained_layout=true)
 
+ax = axes[1]
 
 for ξ in [1.0, 2.0, -1.0, 0.0]
 
@@ -54,7 +55,7 @@ ax.annotate("\$ A_1 = \\left(0, p\\right) \$", xy=(x0, y0),  xycoords="data",
 ax.annotate("\$ A_2 = \\left(1 - \\frac{\\nu p \\xi}{\\mu \\left(1+\\theta\\right)}, \\left(1 + \\frac{\\nu}{\\mu \\left(1+\\theta\\right)} \\xi \\right) p - 1\\right) \$", xy=(x1, y1),  xycoords="data",
             xytext=(1, 1), textcoords="data",
             arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
-            horizontalalignment="center", verticalalignment="center", fontsize=12
+            horizontalalignment="center", verticalalignment="center", fontsize=11,
 )
 
 #ax.text(x0 - 0.05, y0, "\$ \\left(0, p\\right) \$", va="center", ha="center", fontsize=15)
@@ -95,10 +96,12 @@ ax.set_xlabel("\$y\$")
 ax.grid()
 ax.set_ylim([-2, 1.5])
 ax.set_xlim([-0.1, 1.4])
+ax.set_title("(a) Varying \$\\xi\$")
 
-#fig.savefig("figures/figure-reduced_stommel.png", dpi=300)
 
 # ===== Figure varying θ =====
+
+ax = axes[2]
 
 p = 1.2
 ξ = 2.0
@@ -107,10 +110,7 @@ p = 1.2
 θ = 0.0
 example_coe = (p, ξ, μ, θ, ν)
 
-fig, ax = plt.subplots(1, 1, figsize=(6, 4), constrained_layout=true)
-
-
-for θ in [0.0, 1.0, 2.0]
+for θ in [0.0, 1.0, 3.0]
     if θ == 0.0
         ax.plot(ys, dydt(p, ξ, μ, θ, ν), "-", color="#000000", zorder=10)
     else
@@ -179,6 +179,8 @@ ax.set_xlabel("\$y\$")
 ax.grid()
 ax.set_ylim([-2, 1.5])
 ax.set_xlim([-0.1, 1.4])
+ax.set_title("(b) Varying \$\\mu\$")
 
+fig.savefig("figures/figure-reduced_stommel.png", dpi=300)
 plt.show()
 

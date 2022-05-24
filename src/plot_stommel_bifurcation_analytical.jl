@@ -2,7 +2,13 @@ using Formatting
 include("detect_ranges.jl")
 
 
-ξs = [-1.0, -0.5, 0.0, 1.0, 5.0]
+ξ_θs = [
+    (-1.0, 0.0),
+    (-0.5, 0.0),
+    ( 0.0, 0.0),
+    ( 5.0, 0.0),
+    ( 0.0, 0.5),
+]
 ψ0 = 0.0
 ψ_rng = [-4, 6]
 
@@ -14,18 +20,18 @@ println("Done")
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
 
-ax.set_xlabel(L"p", fontsize=25)
-ax.set_ylabel(L"\psi", fontsize=25)
+ax.set_xlabel("\$p\$", fontsize=25)
+ax.set_ylabel("\$\\Psi\$", fontsize=25)
 ax.grid()
 
 cnt = 1
-for ξ in ξs
+for (ξ, θ) in ξ_θs
 
     coe = (
         c = 3.6e3,
         μ = 3.0,
         ν = 1.0,
-        θ = 0.0,
+        θ = θ,
         ξ = ξ,
     )
 
@@ -41,7 +47,7 @@ for ξ in ξs
 
         args = Dict()
         if k==1
-            args[:label] = format("\$\\xi\$ = {:.1f}", ξ)
+            args[:label] = format("\$\\left(\\xi, \\theta \\right) = \\left( {:.1f}, {} \\right) \$", ξ, θ)
         else
             args[:label] = nothing
         end
@@ -57,8 +63,8 @@ for ξ in ξs
 end
 
 ax.set_xlim([0, 3])
-ax.set_ylim([-1, 4.5])
-ax.legend(loc="center right")
-#fig.savefig("figures/figure-stommel_bifur.png", dpi=300)
+ax.set_ylim([-1, 5])
+ax.legend(loc="upper right", )
+fig.savefig("figures/figure-stommel_bifurcation_analytical.png", dpi=300)
 
 plt.show()
