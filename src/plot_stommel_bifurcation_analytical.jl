@@ -2,7 +2,7 @@ using Formatting
 include("detect_ranges.jl")
 
 
-ξs = [-1.0, -0.5, 0.0, 5.0]
+ξs = [-1.0, -0.5, 0.0, 1.0, 5.0]
 ψ0 = 0.0
 ψ_rng = [-4, 6]
 
@@ -25,13 +25,14 @@ for ξ in ξs
         c = 3.6e3,
         μ = 3.0,
         ν = 1.0,
+        θ = 0.0,
         ξ = ξ,
     )
 
     ψs = collect(range(ψ_rng..., length=1001))
-    ps = (1 .+ abs.(ψs)) .* (1 .- (ψs .- ψ0 ) / coe.μ) ./ ( 1 .+ coe.ν * ξ / coe.μ * ( 1 .+ abs.(ψs)) )
+    ps = (1 .+ abs.(ψs)) .* (1 .- (ψs .- ψ0 ) / (coe.μ .* (1 .+ coe.θ))) ./ ( 1 .+ coe.ν * ξ / (coe.μ .* (1 .+ coe.θ)) * ( 1 .+ abs.(ψs)) )
 
-    d_dydτ_dy = - ( 1 .+ abs.(ψs) ) + coe.μ * sign.(ψs) .* (1 .- (ψs .+ coe.ν * ps * ξ) / coe.μ)
+    d_dydτ_dy = - ( 1 .+ abs.(ψs) ) + coe.μ .* (1 .+ coe.θ) * sign.(ψs) .* (1 .- (ψs .+ coe.ν * ps * ξ) / (coe.μ .* (1 .+ coe.θ)))
     stable = d_dydτ_dy .< 0
 
     vals, rngs = detectRanges(stable)

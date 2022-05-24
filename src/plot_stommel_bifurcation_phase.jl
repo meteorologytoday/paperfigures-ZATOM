@@ -1,8 +1,8 @@
 using Formatting
-include("detect_ranges.jl")
+using Roots
 
 
-ξs = collect(range(-1, 5,  length=51))
+ξs = collect(range(-5, 10,  length=1001))
 
 p_left_bnd  = zeros(Float64, length(ξs))
 p_right_bnd = zeros(Float64, length(ξs))
@@ -20,19 +20,29 @@ for (j, ξ) in enumerate(ξs)
     )
 
     α = coe.ν * coe.ξ / coe.μ
-    existence_criteria_satisfied = (1 + α - coe.μ) / α < 0.0
-    p(ψ) = (1 + abs(ψ)) * (1 - ψ / coe.μ) / ( 1 + coe.ν * coe.ξ / coe.μ * ( 1 + abs(ψ)) )
+ 
+    Δ = (1+α)^2 - α * (1 + α - coe.μ )
+    Δ2 = coe.μ^2 - coe.μ - coe.ν * ξ
+    
+    f(ψ) = α * ψ^2 + 2 * (1 + α) * ψ + (1 + α - coe.μ)
+    dfdψ(ψ) = 2 * α * ψ + 2 * (1 + α)
+
+    p(ψ) = (1 + abs(ψ)) * (1 - ψ / coe.μ) / ( 1 + coe.ν * ξ / coe.μ * ( 1 + abs(ψ)) )
 
     local ψ_left, ψ_right, p_left, p_right
 
-    if existence_criteria_satisfied 
+    if Δ >= 0 && Δ2 > 0
 
         ψ_left = 0.0
         α_tmp = (1 + α) / α
-        ψ_right = - α_tmp + (α_tmp^2 + coe.μ / α - α_tmp )^0.5
+        ψ_right = find_zero((f, dfdψ), 0.0, Roots.Newton()) 
+
+
 
         p_left  = p(ψ_left)
         p_right = p(ψ_right)
+        
+        println("ξ = $ξ , α = $α , Δ = $Δ , ψ_right = $ψ_right , p_right = $p_right")
 
         if p_right < p_left
             println("p_left = $p_left , p_right = $p_right")
@@ -60,5 +70,7 @@ ax.invert_yaxis()
 
 ax.plot(p_left_bnd, ξs, color="red")
 ax.plot(p_right_bnd, ξs, color="blue")
+
+#ax.set_xlim([0, 2])
 
 plt.show()
