@@ -110,7 +110,7 @@ p = 1.2
 θ = 0.0
 example_coe = (p, ξ, μ, θ, ν)
 
-for θ in [0.0, 1.0, 3.0]
+for θ in [0.0, 0.5, 2.0]
     if θ == 0.0
         ax.plot(ys, dydt(p, ξ, μ, θ, ν), "-", color="#000000", zorder=10)
     else
@@ -118,7 +118,7 @@ for θ in [0.0, 1.0, 3.0]
     end
     y_kink = _y_kink(p, ξ, μ, θ, ν)
     #ax.text(y_kink + ((θ==0) ? 0.1 : 0), _dydt(y_kink, p, ξ, μ, θ, ν) + 0.1, "\$ \\theta = $(format("{:d}", θ)) \$", color= ( (θ == 0) ? "black" : "#aaaaaa" ), ha="center", va="bottom")
-    ax.text(y_kink , _dydt(y_kink, p, ξ, μ, θ, ν) + 0.1, "\$ \\theta = $(format("{:d}", θ)) \$", color= ( (θ == 0) ? "black" : "#aaaaaa" ), ha="center", va="bottom")
+    ax.text(y_kink , _dydt(y_kink, p, ξ, μ, θ, ν) + 0.1, "\$ \\theta = $(format("{}", θ)) \$", color= ( (θ == 0) ? "black" : "#aaaaaa" ), ha="center", va="bottom")
 end
 
 ax.plot([-5, 5], [0, 0], color="black", linewidth=1)

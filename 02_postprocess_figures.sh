@@ -27,7 +27,7 @@ name_pairs=(
 
 N=$(( ${#name_pairs[@]} / 2 ))
 echo "We have $N figure(s) to rename."
-for i in $( seq 1 $(( ${#plot_codes[@]} / 2 )) ) ; do
+for i in $( seq 1 $N ) ; do
     src_file="${name_pairs[$(( (i-1) * 2 + 0 ))]}"
     dst_file="${name_pairs[$(( (i-1) * 2 + 1 ))]}"
     echo "$src_file => $dst_file"
