@@ -52,7 +52,7 @@ ax.annotate("\$ A_1 = \\left(0, p\\right) \$", xy=(x0, y0),  xycoords="data",
             horizontalalignment="center", verticalalignment="center", fontsize=15,
 )
 
-ax.annotate("\$ A_2 = \\left(1 - \\frac{\\nu p \\xi}{\\mu \\left(1+\\theta\\right)}, \\left(1 + \\frac{\\nu}{\\mu \\left(1+\\theta\\right)} \\xi \\right) p - 1\\right) \$", xy=(x1, y1),  xycoords="data",
+ax.annotate("\$ A_2 = \\left(1 - \\frac{\\nu p \\xi}{\\mu'}, \\left(1 + \\frac{\\nu}{\\mu'} \\xi \\right) p - 1\\right) \$", xy=(x1, y1),  xycoords="data",
             xytext=(1, 1), textcoords="data",
             arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
             horizontalalignment="center", verticalalignment="center", fontsize=11,
@@ -81,7 +81,7 @@ y_low = (1 + μ * (1 + θ) - ν * p * ξ) / (2 * μ * (1 + θ))
 dydt_low = f(y_low)
 ax.scatter([y_low], [dydt_low], s=50, marker="o", color="red", zorder=20)
 
-ax.annotate("\$ A_3 = \\left( \\frac{1 + \\mu \\left(1+\\theta\\right) - \\nu p \\xi}{2 \\mu \\left(1+\\theta\\right)} , p - \\frac{\\left(1 + \\mu \\left(1+\\theta\\right) - \\nu p \\xi\\right)^2}{4 \\mu \\left(1+\\theta\\right)}\\right) \$", xy=(y_low, dydt_low),  xycoords="data",
+ax.annotate("\$ A_3 = \\left( \\frac{1 + \\mu' - \\nu p \\xi}{2 \\mu'} , p - \\frac{\\left(1 + \\mu' - \\nu p \\xi\\right)^2}{4 \\mu'}\\right) \$", xy=(y_low, dydt_low),  xycoords="data",
             xytext=(y_low, -1.3), textcoords="data",
             arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
             horizontalalignment="center", verticalalignment="center", fontsize=15
@@ -179,7 +179,7 @@ ax.set_xlabel("\$y\$")
 ax.grid()
 ax.set_ylim([-2, 1.5])
 ax.set_xlim([-0.1, 1.4])
-ax.set_title("(b) Varying \$\\mu\$")
+ax.set_title("(b) Varying \$\\theta\$")
 
 fig.savefig("figures/figure-reduced_stommel.png", dpi=300)
 plt.show()
