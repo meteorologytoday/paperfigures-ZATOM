@@ -6,6 +6,7 @@ bs=bash
 srcdir=src
 
 plot_codes=(
+    $jl $srcdir/plot_forcing.jl
     $jl $srcdir/plot_stommel_dydt.jl
     $jl $srcdir/plot_stommel_bifurcation_analytical.jl
     $jl $srcdir/plot_stommel_bifurcation_phase.jl
