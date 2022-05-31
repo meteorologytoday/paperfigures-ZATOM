@@ -56,14 +56,14 @@ ln_σ = ax_twinx.plot(rad2deg.(ϕ), σ.(ϕ), "r-")
 ax.set_xlabel("\$\\phi\$ [ \${}^{\\circ}\$N ]")
 
 ax.set_ylabel("\$ T_{\\mathrm{sfc}} \$ [ \${}^{\\circ}\\mathrm{C} \$ ]")
-ax_twinx.set_ylabel("\$\\sigma \$ [ \$\\mathrm{m} / \\mathrm{s} \$ ]", color="red")
+ax_twinx.set_ylabel("\$ V_0 \\sigma \$ ", color="red")
 ax_twinx.spines["right"].set_color("red")
 
 
 ax_twinx.set_yticks([5, 10, 15, 20, 25, 30])
-ax_twinx.set_yticks([-1, -0.5, 0, 0.5, 1.0, 1.5])
+ax_twinx.set_yticks([-2, -1, 0, 1, 2, 3])
 ax.set_ylim([2.5, 32.5])
-ax_twinx.set_ylim([-1.25, 1.75])
+ax_twinx.set_ylim([-2.5, 3.5])
 ax_twinx.yaxis.label.set_color("red")
 ax_twinx.tick_params(axis="y", colors="red")
 ax.grid()
