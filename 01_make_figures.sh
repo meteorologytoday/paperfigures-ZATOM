@@ -9,15 +9,13 @@ plot_codes=(
     $jl $srcdir/plot_forcing.jl
     $jl $srcdir/plot_stommel_dydt.jl
     $jl $srcdir/plot_stommel_bifurcation_analytical.jl
-    $jl $srcdir/plot_stommel_bifurcation_phase.jl
-    $jl $srcdir/plot_ZATOM_bifurcation_phase.jl
-    $bs $srcdir/plot_ZATOM_bifurcation_typeA.sh
-    $bs $srcdir/plot_ZATOM_bifurcation_typeB.sh
+    $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
+    $bs $srcdir/plot_ZATOM_bifurcation_MLT_S.sh
 )
 
-#plot_codes=(
-#    $jl $srcdir/plot_stommel_dydt.jl
-#)
+plot_codes=(
+    $jl $srcdir/plot_forcing.jl
+)
 
 
 # Some code to download data and extract them

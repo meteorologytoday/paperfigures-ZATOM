@@ -26,11 +26,17 @@ end
 
 balance_factor = - integrate(my_tanh, ϕs, ϕc, N) / integrate(my_tanh, ϕc, ϕn, N)
 println("Balance factor: ", balance_factor)
-μ(ϕ) = my_tanh(ϕ) * ( (ϕ > ϕc) ? balance_factor : 1.0 ) 
+σ_unorm(ϕ) = my_tanh(ϕ) * ( (ϕ > ϕc) ? balance_factor : 1.0 )
+σ_unorm_pos(ϕ) = max(σ_unorm(ϕ), 0.0)
+σ0 = integrate(σ_unorm_pos, ϕs, ϕn, N)
+
+σ(ϕ) = σ_unorm(ϕ) / σ0
+σ_pos(ϕ) = max(σ(ϕ), 0.0)
 
 T_sfc(ϕ) = Tn + (Ts - Tn) * 0.5 * (1 + cos( (ϕ - ϕs) / (ϕn - ϕs) * π) ) 
 
-println("Verify the total flux: ", integrate(μ, ϕs, ϕn, N))
+println("Verify the total flux: ", integrate(σ, ϕs, ϕn, N))
+println("Verify the total pos flux: ", integrate(σ_pos, ϕs, ϕn, N))
 
 println("Loading PyPlot")
 using PyPlot
@@ -45,12 +51,12 @@ ax_twinx = ax.twinx()
 ϕ = collect(range(ϕs, ϕn, length=N))
 
 ln_T_sfc = ax.plot(rad2deg.(ϕ), T_sfc.(ϕ), "k-")
-ln_μ = ax_twinx.plot(rad2deg.(ϕ), μ.(ϕ), "r-")
+ln_σ = ax_twinx.plot(rad2deg.(ϕ), σ.(ϕ), "r-")
 
 ax.set_xlabel("\$\\phi\$ [ \${}^{\\circ}\$N ]")
 
 ax.set_ylabel("\$ T_{\\mathrm{sfc}} \$ [ \${}^{\\circ}\\mathrm{C} \$ ]")
-ax_twinx.set_ylabel("\$\\mu \$ [ \$\\mathrm{m} / \\mathrm{s} \$ ]", color="red")
+ax_twinx.set_ylabel("\$\\sigma \$ [ \$\\mathrm{m} / \\mathrm{s} \$ ]", color="red")
 ax_twinx.spines["right"].set_color("red")
 
 

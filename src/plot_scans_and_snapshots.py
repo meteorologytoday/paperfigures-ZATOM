@@ -5,6 +5,7 @@ import load_scan_data as lsd
 import matplotlib.gridspec as gridspec
 from matplotlib import cm
 from matplotlib import rc
+
 import os
 import re
 import pprint
@@ -40,6 +41,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--folder', nargs='+')
 parser.add_argument('--legend', nargs='*')
 parser.add_argument('--colors', nargs='*')
+parser.add_argument('--auto-color', action="store_true")
 parser.add_argument('--output-bifur', default="")
 parser.add_argument('--output-marks', default="")
 parser.add_argument('--x-var', type=str, default="gamma")
@@ -83,6 +85,7 @@ if (legends is None) or (legends is not None and len(legends) < len(folders)):
     print("Legends do not have the same length of folders. Use numbering instead")
     legends = ["%d" % (i,) for i in range(len(folders))]
 
+print("Legends are")
 print(legends)
 
 if len(args.marks) % 2 != 0:
@@ -214,23 +217,36 @@ if (args.legend_coor is not None) and (len(args.legend_coor) != 0):
     legend_coor = True
     print("Legend will be plotted using text with the specified coordinate in --legend-coor. Color will be set to black.")
 
-if args.colors is None:
-    colors = [
-        'red',
-        'darkorange',
-        'darkgreen', 
-        'blue',
-        'violet',
-        'black',
-        "grey",
-        "dodgerblue",
-        "brown",
-        "purple",
-        "pink",
-    ]
+
+if args.auto_color:
+
+    print("Option --auto-color is on. Use self-generated colors.")
+    cmap = plt.cm.get_cmap("Set1", len(legends))
+    colors = [ cmap(i) for i in range(len(legends)) ]
+    
 else:
-    colors = args.colors
-               
+
+    if args.colors is None:
+        colors = [
+            'red',
+            'darkorange',
+            'darkgreen', 
+            'blue',
+            'violet',
+            'black',
+            "grey",
+            "dodgerblue",
+            "brown",
+            "purple",
+            "pink",
+        ]
+    else:
+
+        colors = args.colors
+
+        if len(colors) < len(legends):
+            raise Exception("Colors provided have to be more than number of legends")
+                   
 print("Data loaded. Plotting now...")
 
 plot_z_W = coor["z_W"] / 1e3
