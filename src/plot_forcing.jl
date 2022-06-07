@@ -7,8 +7,16 @@ N = 1001
 ϕn = 70.0 |> deg2rad
 δ = 20.0 |> deg2rad
 
+Δλi = 10.0
+Δλb =  5.0
+D = Δλi / (Δλi + Δλb)
+ξ = 0.2
+
+
 Ts = 30.0
 Tn = 5.0
+
+
 
 
 function integrate(y_func, x0, x1, n)
@@ -33,6 +41,31 @@ println("Balance factor: ", balance_factor)
 σ(ϕ) = σ_unorm(ϕ) / σ0
 σ_pos(ϕ) = max(σ(ϕ), 0.0)
 
+function σ_ξ(ϕ, ξ; side)
+
+    local _σ
+
+    _σ = σ(ϕ)
+   
+    if ϕ >= ϕc
+
+        if side == "w"
+            _σ *= 1 - ξ
+        elseif side == "e"
+            _σ *= 1 + ξ * D
+        else
+            throw(ErrorException("Unknown side: $side"))
+        end
+    end
+
+    return _σ
+
+end
+
+σ_w(ϕ) = σ_ξ(ϕ, ξ; side="w")
+σ_e(ϕ) = σ_ξ(ϕ, ξ; side="e")
+
+
 T_sfc(ϕ) = Tn + (Ts - Tn) * 0.5 * (1 + cos( (ϕ - ϕs) / (ϕn - ϕs) * π) ) 
 
 println("Verify the total flux: ", integrate(σ, ϕs, ϕn, N))
@@ -49,9 +82,12 @@ fig, ax = plt.subplots(1, 1, figsize=(6,4), constrained_layout=true)
 ax_twinx = ax.twinx()
 
 ϕ = collect(range(ϕs, ϕn, length=N))
+ϕ_hlat = ϕ[ϕ .>= ϕc]
 
 ln_T_sfc = ax.plot(rad2deg.(ϕ), T_sfc.(ϕ), "k-")
-ln_σ = ax_twinx.plot(rad2deg.(ϕ), σ.(ϕ), "r-")
+ln_σ = ax_twinx.plot(rad2deg.(ϕ), σ.(ϕ),   "r-")
+ln_σ_w = ax_twinx.plot(rad2deg.(ϕ_hlat), σ_w.(ϕ_hlat), ls="-.", c="red")
+ln_σ_e = ax_twinx.plot(rad2deg.(ϕ_hlat), σ_e.(ϕ_hlat), ls="--", c="red")
 
 ax.set_xlabel("\$\\phi\$ [ \${}^{\\circ}\$N ]")
 
