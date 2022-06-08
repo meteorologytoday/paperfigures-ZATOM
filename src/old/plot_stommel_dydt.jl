@@ -23,7 +23,9 @@ p = 1.2
 example_coe = (p, ξ, μ, θ, ν)
 
 
-fig, ax = plt.subplots(1, 1, figsize=(6, 4), constrained_layout=true)
+fig, axes = plt.subplots(2, 1, figsize=(6, 8), constrained_layout=true)
+
+ax = axes[1]
 
 for ξ in [-1.0, -2.0, 1.0, 0.0]
 
@@ -94,6 +96,90 @@ ax.set_xlabel("\$y\$")
 ax.grid()
 ax.set_ylim([-2, 1.5])
 ax.set_xlim([-0.1, 1.4])
+ax.set_title("(a) Varying \$\\xi\$")
+
+
+# ===== Figure varying θ =====
+
+ax = axes[2]
+
+p = 1.2
+ξ = -2.0
+μ = 5.0
+ν = 1.0
+θ = 0.0
+example_coe = (p, ξ, μ, θ, ν)
+
+for θ in [0.0, 0.5, 2.0]
+    if θ == 0.0
+        ax.plot(ys, dydt(p, ξ, μ, θ, ν), "-", color="#000000", zorder=10)
+    else
+        ax.plot(ys, dydt(p, ξ, μ, θ, ν), "-", color="#cccccc", zorder=1)
+    end
+    y_kink = _y_kink(p, ξ, μ, θ, ν)
+    #ax.text(y_kink + ((θ==0) ? 0.1 : 0), _dydt(y_kink, p, ξ, μ, θ, ν) + 0.1, "\$ \\theta = $(format("{:d}", θ)) \$", color= ( (θ == 0) ? "black" : "#aaaaaa" ), ha="center", va="bottom")
+    ax.text(y_kink , _dydt(y_kink, p, ξ, μ, θ, ν) + 0.1, "\$ \\theta = $(format("{}", θ)) \$", color= ( (θ == 0) ? "black" : "#aaaaaa" ), ha="center", va="bottom")
+end
+
+ax.plot([-5, 5], [0, 0], color="black", linewidth=1)
+ax.plot([0, 0], [-5, 5], color="black", linewidth=1)
+
+x0 = 0
+x1 = _y_kink(example_coe...)
+y0 = _dydt(x0, example_coe...)
+y1 = _dydt(x1, example_coe...)
+ax.scatter([x0, x1], [y0, y1], s=50, marker="o", color="red", zorder=20)
+#=
+ax.annotate("\$ A_1 = \\left(0, p\\right) \$", xy=(x0, y0),  xycoords="data",
+            xytext=(0.3, 1.25), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=15,
+)
+
+ax.annotate("\$ A_2 = \\left(1 - \\frac{\\nu p \\xi}{\\mu \\left(1+\\theta\\right)}, \\left(1 + \\frac{\\nu}{\\mu \\left(1+\\theta\\right)} \\xi \\right) p - 1\\right) \$", xy=(x1, y1),  xycoords="data",
+            xytext=(1, 1), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=12
+)
+=#
+
+slope = ( y0 - y1 ) / (x0 - x1)
+ax.plot([0, 2], [_dydt(0, example_coe...), _dydt(0, example_coe...) + 2 * slope], color="red", linestyle="dashed")
+
+# Dot steady states
+
+f(y) = _dydt(y, example_coe...)
+y_ss    = [ find_zero(f,  init_pt) for init_pt in [0.6,] ]
+dydt_ss = f.(y_ss)
+ax.scatter(y_ss, dydt_ss, s=50, marker="x", color="red", zorder=20)
+
+#ax.plot([y_ss[1], y_ss[1]], [ 0, -0.5 ], color="#888888", linestyle="dashed")
+#ax.plot([y_ss[3], y_ss[3]], [ 0, -0.5 ], color="#888888", linestyle="dashed")
+#ax.text(y_ss[1], -0.5, "thermal", color="red", ha="center", va="top")
+#ax.text(y_ss[3], -0.5, "haline", color="red", ha="center", va="top")
+
+# Dot the lowest point on the parabola
+y_low = (1 + μ * (1 + θ) + ν * p * ξ) / (2 * μ * (1 + θ))
+dydt_low = f(y_low)
+ax.scatter([y_low], [dydt_low], s=50, marker="o", color="red", zorder=20)
+
+#=
+ax.annotate("\$ A_3 = \\left( \\frac{1 + \\mu \\left(1+\\theta\\right) - \\nu p \\xi}{2 \\mu \\left(1+\\theta\\right)} , p - \\frac{\\left(1 + \\mu \\left(1+\\theta\\right) - \\nu p \\xi\\right)^2}{4 \\mu \\left(1+\\theta\\right)}\\right) \$", xy=(y_low, dydt_low),  xycoords="data",
+            xytext=(y_low, -1.3), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=15
+)
+=#
+
+
+
+ax.set_ylabel("\$\\mathrm{d} y / \\mathrm{d}\\tau\$")
+ax.set_xlabel("\$y\$")
+
+ax.grid()
+ax.set_ylim([-2, 1.5])
+ax.set_xlim([-0.1, 1.4])
+ax.set_title("(b) Varying \$\\theta\$")
 
 fig.savefig("figures/figure-reduced_stommel.png", dpi=300)
 plt.show()

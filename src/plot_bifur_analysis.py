@@ -35,8 +35,6 @@ def repNaN2None(arr):
         if np.isnan(elm):
             arr[i] = None
 
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--folder', nargs='+')
 parser.add_argument('--legend', nargs='*')
@@ -44,44 +42,34 @@ parser.add_argument('--colors', nargs='*')
 parser.add_argument('--auto-color', action="store_true")
 parser.add_argument('--output-bifur', default="")
 parser.add_argument('--output-marks', default="")
-parser.add_argument('--x-var', type=str, default="gamma")
-parser.add_argument('--y-var', type=str, default="psi")
-parser.add_argument('--x-rng', nargs=2, type=float)
-parser.add_argument('--y-rng', nargs=2, type=float, default=[np.nan, np.nan])
-parser.add_argument('--numbering-jmp', type=int, default=10)
-parser.add_argument('--show-numbering', action="store_true")
-parser.add_argument('--show-filename', action="store_true")
-parser.add_argument('--metric', type=str, default="max", choices=["max", "mean", "fixed", "fixed-lat", "mean-btw-lat"])
-parser.add_argument('--metric-dep', type=float, default=1000.0)
-parser.add_argument('--metric-lat', type=float, default=50.0)
-parser.add_argument('--metric-btw-lat1', type=float, default=10.0)
-parser.add_argument('--metric-btw-lat2', type=float, default=70.0)
+parser.add_argument('--offset-marks', type=float, default=0)
+parser.add_argument('--gamma-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--psi-fixed-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--s1000-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--db_ns-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--db_ew-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--cvt_e-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--cvt_w-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--marks', nargs='*', type=float, default=[])
 parser.add_argument('--marks-pos', nargs='*', type=str, default=[])
-parser.add_argument('--legend-coor', nargs='*', type=float, default=[])
 parser.add_argument('--residue-threshold', type=float, default=1e-12)
 args = parser.parse_args()
 
 pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(args)
 
-repNaN2None(args.y_rng)
+repNaN2None(args.gamma_rng)
+repNaN2None(args.psi_fixed_rng)
+repNaN2None(args.s1000_rng)
+repNaN2None(args.db_ns_rng)
+repNaN2None(args.db_ew_rng)
+repNaN2None(args.cvt_w_rng)
+repNaN2None(args.cvt_e_rng)
+
 data = []
 coor = {}
 
-x_var = {
-    "gamma" : "Q",
-    "xi"    : "xi",
-}[args.x_var]
-
-y_var = {
-    "psi" : "Psib",
-    "chi" : "chi",
-    "s1000" : "s1000",
-    "db_ns" : "db_ns",
-    "db_ew" : "db_ew",
-}[args.y_var]
-
+yvars = ["Psib", "s1000", "db_ns", "db_ew"]
 
 folders = args.folder
 legends   = args.legend
@@ -99,7 +87,6 @@ if len(args.marks) % 2 != 0:
 
 # Data contains a list of folders (cases)
 # and each case has multiple data files
-
 data_to_delete = []
 data = []
 coor = None
@@ -134,75 +121,25 @@ for rm_idx in data_to_delete:
     del data[rm_idx]
     del legends[rm_idx]
 
-
-
-
 # remove data points that is not converging
 for d in data:
-    d[x_var][d["res"] > args.residue_threshold] = np.nan
+    for v in yvars:
+        d[v][d["res"] > args.residue_threshold] = np.nan
 
 for d in data:
     
-    d[x_var] /= 1e6
+    d["Q"] /= 1e6
+    d["Psib"] /= 1e6
+    d["db_ns"] *= 1e3
+    d["db_ew"] *= 1e3
+    d["s1000"] *= 1e5
+    d["s1000_hlat"] *= 1e5
 
-    if y_var in [ "Psib", ]:
-        d[y_var] /= 1e6
+    y_ind = np.argmin(np.abs(coor["y_T"] - 60.0))
+    z_ind = np.argmin(np.abs(coor["z_W"] - 1000.0))
 
-    if y_var in ["s1000", "db_ns", "db_ew"]:
- 
-        d["y"] = d[y_var]
-        
-    else:
-
-        y_ind = -1
-        z_ind = -1
-
-        if args.metric in ["fixed", "fixed-lat"]:
-            y_ind = np.argmin(np.abs(coor["y_T"] - args.metric_lat))
-
-            if args.metric == "fixed":
-                z_ind = np.argmin(np.abs(coor["z_W"] - args.metric_dep))
-
-            print("z_ind = %d, y_ind = %d" % (z_ind, y_ind)) 
-
-        if args.metric == "max":
-           d["y"] = np.amax(d[y_var][:, :, :], axis=(1,2))
-        elif args.metric in ["fixed"]:
-           d["y"] = d[y_var][:, y_ind, z_ind]
-        elif args.metric in ["fixed-lat"]:
-           d["y"] = np.amax(d[y_var][:, y_ind, :], axis=(1,))
-        elif args.metric == "mean":
-           d["y"] = np.mean(d[y_var], axis=(1,2))
-
-# Compute the deep water formation grids
-
-def computeDeepWaterFormationGrids(b):
-
-    flags = b * 0
-    b_lower = np.roll(b, -1, axis=1)
-    
-    flags[b_lower > b] = 1.0
-    flags[:, -1] = flags[:, -2]
-    
-    return flags
-
-for d in data:
-
-    x = d[x_var]
-    be = d["be"]
-    bw = d["bw"]
-   
-    dwf_east = be * 0.0
-    dwf_west = be * 0.0
-    for j in range(len(x)-1):
-
-        dwf_east[j, :, :] = computeDeepWaterFormationGrids(be[j, :, :])
-        dwf_west[j, :, :] = computeDeepWaterFormationGrids(bw[j, :, :])
-
-    d["dwf_east"] = dwf_east
-    d["dwf_west"] = dwf_west
-
-    #print(np.sum(dwf_east))
+    print("z_ind = %d, y_ind = %d" % (z_ind, y_ind)) 
+    d["psi_fixed"] = d["Psib"][:, y_ind, z_ind] 
 
 # Pick out the marks
 def dist(x1,y1,x2,y2):
@@ -215,21 +152,15 @@ mark_index = np.zeros((nmarkpairs, 2), dtype=int) - 1
 for k in range(nmarkpairs):
     print("Search for the marker case closest to : (gamma, psi) = (%f, %f)" % (args.marks[k*2], args.marks[k*2+1]))
     for i, d in enumerate(data):
-        for s in range(len(d[x_var])):
-            _dist = dist(d[x_var][s]*10, d["y"][s], args.marks[k*2]*10, args.marks[k*2+1])
+        for s in range(len(d["Q"])):
+            _dist = dist(d["Q"][s]*10, d["psi_fixed"][s], args.marks[k*2]*10, args.marks[k*2+1])
             if _dist < shortest_dist[k]:
                 shortest_dist[k] = _dist
                 mark_index[k, 0] = i
                 mark_index[k, 1] = s
+    
     print("Found: (%d, %d)" % (mark_index[k, 0], mark_index[k, 1]))
 
-
-
-# Decide color and legend
-legend_coor = False
-if (args.legend_coor is not None) and (len(args.legend_coor) != 0):
-    legend_coor = True
-    print("Legend will be plotted using text with the specified coordinate in --legend-coor. Color will be set to black.")
 
 
 if args.auto_color:
@@ -266,7 +197,11 @@ print("Data loaded. Plotting now...")
 plot_z_W = coor["z_W"] / 1e3
 plot_z_T = coor["z_T"] / 1e3
 
-fig, ax = plt.subplots(1, 1, figsize=(6, 6), squeeze=False, constrained_layout=True)
+fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
+
+ax_flat = ax.flatten(order='F')
+       
+target_vars = ["psi_fixed", "db_ew", "s1000", "db_ns", "cvt_e", "cvt_w"]
 
 for i in range(len(legends)):
     
@@ -281,29 +216,24 @@ for i in range(len(legends)):
         
         rng = rngs[j]
 
-        x   = d[x_var][rng]
+        x   = d["Q"][rng]
         res = d["res"][rng]
-        y   = d["y"][rng]
 
-        linestyle = "solid" if val == 1.0 else "dashed"
+
+        for k, var in enumerate(target_vars):
+    
+            y   = d[var][rng]
+
+            linestyle = "solid" if val == 1.0 else "dashed"
  
-        kw_label = {
-            "color" : colors[i],
-        }
+            kw_label = {
+                "color" : colors[i],
+            }
 
-        if j == 0:
-            kw_label['label'] = legends[i]
+            if j == 0 and k == 0:
+                kw_label['label'] = legends[i]
 
-
-        if legend_coor == True:
-        
-            _x = args.legend_coor[i*2]
-            _y = args.legend_coor[i*2+1]
-            ax[0, 0].text(_x, _y, legends[i], color=colors[i], size=15, ha="center", va="center")
-   
-
-        ax[0, 0].plot(x, y, zorder=1, linestyle=linestyle, **kw_label)
-
+            ax_flat[k].plot(x, y, zorder=1, linestyle=linestyle, **kw_label)
 
 
 
@@ -312,63 +242,45 @@ for k in range(nmarkpairs):
     print(mark_index[k])
     d = data[mark_index[k,0]]
     s = mark_index[k, 1]
-    ax[0,0].scatter(d[x_var][s], d["y"][s], s=80, marker="*", c="yellow", edgecolor="k", zorder=50)
+    
+    for l, var in enumerate(target_vars):
+        #ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="yellow", edgecolor="k", zorder=50)
+        ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
+        ax_flat[l].text(d["Q"][s] + args.offset_marks, d[var][s], "123456789"[k], size=12, va="center", ha="left")
 
-    pos = args.marks_pos[k]
-
-    if pos == "top": 
-        ha = "center"
-        va = "bottom"
-        offset_x = 0.0
-        offset_y = 1.0
-    elif pos == "right": 
-        ha = "left"
-        va = "center"
-        offset_x = 1.0
-        offset_y = 0.0
-    elif pos == "bottom": 
-        ha = "center"
-        va = "top"
-        offset_x = 0.0
-        offset_y = -1.5
-    elif pos == "left": 
-        ha = "right"
-        va = "center"
-        offset_x = -1.0
-        offset_y = 0.0
-
-    ax[0,0].text(d[x_var][s] + offset_x * 0.01, d["y"][s] + offset_y * 0.13, "123456789"[k], size=15, va=va, ha=ha)
-
-# if True then it is labeled directly on the specified coordinate
-if legend_coor == False:
-    ax[0, 0].legend()
+ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25)
 
 
-varname = {
-    "psi"  : r"$\psi$",
-    "chi"  : r"$\chi$",
+labels = {
+    "psi_fixed"  : r"$\psi$",
     "s1000"  : r"$s$",
+    "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",
     "db_ns"  : r"$\delta b$",
     "db_ew"  : r"$b_e^* - b_w^*$",
-}[args.y_var]
+    "cvt_e"  : r"$\tilde{q}_e$",
+    "cvt_w"  : r"$\tilde{q}_w$",
+}
 
-add_on = ""
-if args.metric == "fixed":
-    add_on = " at $%d^{\circ}\\mathrm{N}$ $%d\\mathrm{m}$ depth" % (args.metric_lat, args.metric_dep)
+units = {
+    "psi_fixed" : "[Sv]",
+    "s1000"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "s1000_hlat"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "db_ns"  : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "db_ew"  : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "cvt_e"  : r"",
+    "cvt_w"  : r"",
+}
 
-unit = {
-    "psi" : "[Sv]",
-    "chi" : "[Sv / m]",
-    "s1000"  : r"[ $ \mathrm{s}^{-2} $]",
-    "db_ns"  : r"[ $ \mathrm{m} / \mathrm{s}^{2} $]",
-    "db_ew"  : r"[ $ \mathrm{m} / \mathrm{s}^{2} $]",
-}[args.y_var]
-
-ax[0, 0].set_ylabel("%s%s %s" % (varname, add_on, unit))
-ax[0, 0].set_ylim(args.y_rng)
+for l, var in enumerate(target_vars):
+    ax_flat[l].set_ylabel("%s" % (units[var],))
     
-ax[0, 0].set_xlabel("$\\gamma$ [Sv]")
-ax[0, 0].set_xlim(args.x_rng)
+    ylim_attr = "%s_rng" % (var,)
+    if hasattr(args, ylim_attr):
+        ax_flat[l].set_ylim(getattr(args, ylim_attr))
+
+    ax_flat[l].set_xlabel("$\\gamma$ [Sv]")
+    ax_flat[l].set_xlim(args.gamma_rng)
+    ax_flat[l].set_title("(%s) %s" % ("abcdefg"[l], labels[var],))
 
 if args.output_bifur != "":
     fig.savefig(args.output_bifur, dpi=300)
@@ -389,7 +301,7 @@ if nmarkpairs != 0:
     b_mean = np.mean(b_concat)
     b_std  = np.std(b_concat)
 
-    nstd = 2
+    nstd = 3
     b_neworigin = b_mean - nstd * b_std
     b_rng = np.array([0.0, 2 * nstd * b_std])
 
@@ -437,12 +349,12 @@ if nmarkpairs != 0:
         _ax[0].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=4)
         
         b_mappable = _ax[1].contourf(coor["y_T"], plot_z_T, bw_plot, levels_b, cmap=b_cmap, extend='both')
-        CS = _ax[1].contour(coor["y_V"], plot_z_W, d["Psib"][s, :, :].transpose(), levels_psi, colors="black")
-        _ax[1].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=1)
+        #CS = _ax[1].contour(coor["y_V"], plot_z_W, d["Psib"][s, :, :].transpose(), levels_psi, colors="black")
+        #_ax[1].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=1)
 
         b_mappable = _ax[2].contourf(coor["y_T"], plot_z_T, be_plot, levels_b, cmap=b_cmap, extend="both")
-        CS = _ax[2].contour(coor["y_T"], plot_z_W, d["chi"][s, :, :].transpose(), levels_psi, colors="black")
-        _ax[2].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=1)
+        #CS = _ax[2].contour(coor["y_T"], plot_z_W, d["chi"][s, :, :].transpose(), levels_psi, colors="black")
+        #_ax[2].clabel(CS, CS.levels, inline=True, fmt="%d", fontsize=10, inline_spacing=1)
         
         cs_dwf_west = _ax[1].contourf(coor['y_T'], plot_z_T, d['dwf_west'][s, :, :].transpose(), [0, 0.5,1.5], colors="none", hatches=[None, ".."])
         cs_dwf_east = _ax[2].contourf(coor['y_T'], plot_z_T, d['dwf_east'][s, :, :].transpose(), [0, 0.5,1.5], colors="none", hatches=[None, ".."])
@@ -481,7 +393,7 @@ if nmarkpairs != 0:
 
         
     cax = fig2.add_subplot(gs0[:, -1])
-    plt.colorbar(mappable=b_mappable, cax=cax, cmap=b_cmap, orientation="vertical", ticks=[], label="$b_w^*$ and $b_e$ [$\\mathrm{m}^2 / \\mathrm{s}$]")
+    plt.colorbar(mappable=b_mappable, cax=cax, cmap=b_cmap, orientation="vertical", ticks=[], label="$b_w^*$ and $b_e^*$ [$\\mathrm{m}^2 / \\mathrm{s}$]")
     
     if args.output_marks != "":
         fig2.savefig(args.output_marks, dpi=300)
@@ -489,12 +401,4 @@ if nmarkpairs != 0:
 
 
 plt.show()
-
-
-
-
-
-
-
-
 

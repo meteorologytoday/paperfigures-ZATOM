@@ -105,6 +105,6 @@ ax_twinx.tick_params(axis="y", colors="red")
 ax.grid()
 
 
-fig.savefig("figure-forcing.png", dpi=300)
+fig.savefig("figures/figure-forcing.png", dpi=300)
 
 sleep(500)

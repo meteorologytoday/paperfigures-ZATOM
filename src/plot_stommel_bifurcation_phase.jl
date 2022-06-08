@@ -77,13 +77,13 @@ ax.set_xlabel("\$p\$", fontsize=25)
 ax.set_ylabel("\$\\xi\$", fontsize=25)
 ax.grid()
 ax.set_ylim([-1, 6.2])
-ax.set_xlim([0.0, 6])
+ax.set_xlim([0.0, 5])
 ax.invert_yaxis()
 
 
 #ax.plot(p_left_bnd, ξs, color="red")
 #ax.plot(p_right_bnd, ξs, color="blue")
-for (i, θ) in enumerate([ 0.5, 0 ])
+for (i, θ) in enumerate([ 0, ])
 
     facecolor = ["dodgerblue", "lightsalmon", "dodgerblue", "lightgreen"][i]
     edgecolor = ["blue", "orangered", "blue", "green"][i]
@@ -92,7 +92,7 @@ for (i, θ) in enumerate([ 0.5, 0 ])
     p_left_bnd, p_right_bnd = generate_bnds(ξs, θ)
     ax.fill_betweenx(ξs, p_left_bnd, p_right_bnd, facecolor=facecolor, edgecolor=edgecolor, alpha=0.8, linewidth=1, zorder=10, label="\$\\theta=$θ\$")
 end
-ax.legend(loc="lower right")
+#ax.legend(loc="lower right")
 ax.set_title("(a) Multiple equilibria phase diagram of Stommel's two-box model")
 fig.savefig("figures/figure-stommel_bifurcation_phase.png", dpi=300)
 

@@ -9,19 +9,20 @@ echo "Making final figures... "
 
 
 # Merging two sub-figures
-convert \( figures/figure-stommel_bifurcation_phase.png \) \
-    \( figures/figure-ZATOM_bifurcation_phase.png \) -gravity center -append \
-     figures/merged-phase-diagram.png
+#convert \( figures/figure-stommel_bifurcation_phase.png \) \
+#    \( figures/figure-ZATOM_bifurcation_phase.png \) -gravity center -append \
+#     figures/merged-phase-diagram.png
 
 name_pairs=(
-    figure-forcing.png                          fig03.png
-    bifurcation_xi_typeA.png                    fig04.png
-    bifurcation_xi_marks_typeA.png              fig05.png
-    bifurcation_xi_typeB.png                    fig06.png
-    bifurcation_xi_marks_typeB.png              fig07.png
-    figure-reduced_stommel.png                  fig08.png
-    figure-stommel_bifurcation_analytical.png   fig09.png
-    merged-phase-diagram.png                    fig10.png
+    figure-forcing.png                            fig03.png
+    figure-reduced_stommel.png                    fig04.png
+    figure-stommel_bifurcation_analytical.png     fig05.png
+    figure-stommel_bifurcation_phase.png          fig06.png
+    ZATOM_bifur_analysis_xi.png                   fig07.png
+    ZATOM_bifur_analysis_xi_marks.png             fig08.png
+    ZATOM_bifur_analysis_MLT_S.png                fig09.png
+    ZATOM_bifur_analysis_MLT_S_marks.png          fig10.png
+    figure-ZATOM_bifurcation_phase.png            fig11.png
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))

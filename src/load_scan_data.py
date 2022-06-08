@@ -36,8 +36,9 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
             with Dataset("%s/%s" % (folder, filename), "r") as f:
                
                 if load_coor and ("y_V" not in coor):
-                    for varname in ["y_V", "z_W", "y_T", "z_T"]:
+                    for varname in ["y_V", "z_W", "y_T", "z_T", "dx_T"]:
                         coor[varname] = f.variables[varname][:]
+                        
 
                 for varname in loaded_varnames:
                     d[varname] = f.variables[varname][:]
@@ -59,15 +60,18 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
 
 
     if load_coor:
+        
         coor["dz_T"] = coor["z_W"][:-1] - coor["z_W"][1:]
         coor["dy_T"] = coor["y_V"][1:]  - coor["y_V"][:-1]
         coor["dA_T"] = coor["dy_T"][:, None] * coor["dz_T"][None, :]
-         
+        coor["cos_lat"] = np.cos(coor["y_T"])
+        
         coor["y_V"] *= 180.0/np.pi
         coor["y_T"] *= 180.0/np.pi
         coor["z_T"] *= -1 
         coor["z_W"] *= -1 
-    
+        
+
     return concat_dataset, coor
 
 
