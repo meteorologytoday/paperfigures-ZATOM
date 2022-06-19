@@ -36,7 +36,7 @@ ax.invert_yaxis()
 ax.fill_betweenx(typeA_pts[:, 1], typeA_pts[:, 2], typeA_pts[:, 3], facecolor="lightsalmon", edgecolor="orangered", alpha=0.8, linewidth=1, zorder=10, label="\$\\mu_A\$")
 #ax.fill_betweenx(typeB_pts[:, 1], typeB_pts[:, 2], typeB_pts[:, 3], facecolor="dodgerblue", edgecolor="blue", alpha=0.8, linewidth=1, zorder=10, label="\$\\mu_B\$")
 
-ax.legend(loc="lower right")
+#ax.legend(loc="lower right")
 ax.set_title("Multiple equilibria phase diagram of ZATOM")
 fig.savefig("figures/figure-ZATOM_bifurcation_phase.png", dpi=300)
 
