@@ -26,7 +26,7 @@ println("Done")
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
 ax.set_xlabel("\$\\gamma\$ [ Sv ]", fontsize=25)
-ax.set_ylabel("\$\\xi\$", fontsize=25)
+ax.set_ylabel("\$\\xi'\$", fontsize=25)
 ax.grid()
 #ax.set_ylim([-1, 6.2])
 #ax.set_xlim([0.0, 6])

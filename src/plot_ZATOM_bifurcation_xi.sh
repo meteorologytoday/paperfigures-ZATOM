@@ -8,7 +8,7 @@ python3 src/plot_bifur_analysis.py --folder \
    ./data/continuation_data_0531/batch_std20/output_redo_balanced_tanh/CM_xi00000050_pos/lb$res  \
    ./data/continuation_data_0531/batch_std20/output_redo_balanced_tanh/CM_xi00000100_pos/lb$res  \
    ./data/continuation_data_0531/batch_std20/output_redo_balanced_tanh/CM_xi00000150_pos/lb$res  \
-    --legend '$\xi=0.5$' '$\xi=0$' '$\xi=-0.5$' '$\xi=-1$' '$\xi=-1.5$' \
+    --legend '$\xi'"'"'=0.5$' '$\xi'"'"'=0$' '$\xi'"'"'=-0.5$' '$\xi'"'"'=-1$' '$\xi'"'"'=-1.5$' \
     --colors "black" "orange" "red" "darkgreen" "blue" "purple"  \
     --gamma-rng -0.01 0.2  \
     --psi-fixed-rng -2 10 \
