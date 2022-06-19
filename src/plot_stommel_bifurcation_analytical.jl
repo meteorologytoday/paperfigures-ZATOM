@@ -7,7 +7,6 @@ include("detect_ranges.jl")
     (-0.5, 0.0),
     ( 0.0, 0.0),
     ( 5.0, 0.0),
-    ( 0.0, 0.5),
 ]
 ψ0 = 0.0
 ψ_rng = [-4, 6]
@@ -47,7 +46,8 @@ for (ξ, θ) in ξ_θs
 
         args = Dict()
         if k==1
-            args[:label] = format("\$\\left(\\xi, \\theta \\right) = \\left( {:.1f}, {} \\right) \$", ξ, θ)
+            #args[:label] = format("\$\\left(\\xi, \\theta \\right) = \\left( {:.1f}, {} \\right) \$", ξ, θ)
+            args[:label] = format("\$\\xi = {:.1f} \$", ξ)
         else
             args[:label] = nothing
         end
@@ -64,7 +64,7 @@ end
 
 ax.set_xlim([0, 3])
 ax.set_ylim([-1, 5])
-ax.legend(loc="upper right", )
+ax.legend(loc="center right",)
 fig.savefig("figures/figure-stommel_bifurcation_analytical.png", dpi=300)
 
 plt.show()
