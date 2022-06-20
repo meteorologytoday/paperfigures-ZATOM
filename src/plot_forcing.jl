@@ -74,7 +74,6 @@ println("Verify the total pos flux: ", integrate(σ_pos, ϕs, ϕn, N))
 println("Loading PyPlot")
 using PyPlot
 plt = PyPlot
-plt.ion()
 println("Done")
 
 fig, ax = plt.subplots(1, 1, figsize=(6,4), constrained_layout=true)
@@ -92,9 +91,11 @@ ln_σ_e = ax_twinx.plot(rad2deg.(ϕ_hlat), σ_e.(ϕ_hlat), ls="--", c="red")
 ax.set_xlabel("\$\\phi\$ [ \${}^{\\circ}\$N ]")
 
 ax.set_ylabel("\$ T_{\\mathrm{sfc}} \$ [ \${}^{\\circ}\\mathrm{C} \$ ]")
-ax_twinx.set_ylabel("\$ V_0 \\sigma \$ ", color="red")
+ax_twinx.set_ylabel("\$ V_0 \\sigma \\eta \$ ", color="red")
 ax_twinx.spines["right"].set_color("red")
 
+ax_twinx.text(50, 2.5, "East", size=12, color="red", ha="center", va="center")
+ax_twinx.text(60, 1.5, "West", size=12, color="red", ha="center", va="center")
 
 ax_twinx.set_yticks([5, 10, 15, 20, 25, 30])
 ax_twinx.set_yticks([-2, -1, 0, 1, 2, 3])
@@ -107,4 +108,4 @@ ax.grid()
 
 fig.savefig("figures/figure-forcing.png", dpi=300)
 
-sleep(500)
+plt.show()
