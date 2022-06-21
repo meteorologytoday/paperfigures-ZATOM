@@ -13,9 +13,6 @@ import numpy as np
 def makeExtendedData(data, coor):
 
     data["bw_bnd"] = data["be"] + 2 * ( data["bw"] - data["be"] )
-    chi_T = (data["chi"][:, :, :-1] + data["chi"][:, :, 1:]) / 2
-    psi_T = (data["Psib"][:, :, :-1] + data["Psib"][:, :, 1:]) / 2
-    psi_T = (psi_T[:, :-1, :] + psi_T[:, 1:, :]) / 2
 
     z1000_ind = np.argmin(np.abs(coor["z_T"] - 1000.0))
     y40_ind = np.argmin(np.abs(coor["y_T"] - 40.0))
@@ -25,12 +22,6 @@ def makeExtendedData(data, coor):
     b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
     data["s1000"] = ( b_mean[:, :, 0] - b_mean[:, :, z1000_ind] ) / ( coor["z_T"][z1000_ind] - coor["z_T"][0] )
     data["s1000"] = np.average( data["s1000"][:, :], weights=coor["cos_lat"], axis=1)
-    
-    chi_T_vavg = np.average( chi_T[:, :, :z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
-    data["chi1000"] = np.average( chi_T_vavg[:, :], weights=coor["cos_lat"], axis=1)
- 
-    psi_T_vavg = np.average( psi_T[:, :, :z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
-    data["psi1000"] = np.average( psi_T_vavg[:, :], weights=coor["cos_lat"], axis=1)
  
     data["s1000_hlat"] = ( b_mean[:, :, 0] - b_mean[:, :, z1000_ind] ) / ( coor["z_T"][z1000_ind] - coor["z_T"][0] )
     data["s1000_hlat"] = np.average( data["s1000_hlat"][:, y40_ind:], weights=coor["cos_lat"][y40_ind:], axis=1)

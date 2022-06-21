@@ -4,14 +4,13 @@ res=8
 
 python3 src/plot_bifur_analysis.py --folder \
    ./data/continuation_data_0531/batch_MLT_S/output_redo_balanced_tanh/CM_MLT_S00000058_pos/lb$res  \
-   ./data/continuation_data_0531/batch_MLT_S/output_redo_balanced_tanh/CM_MLT_S00000058_neg/lb$res  \
    ./data/continuation_data_0531/batch_MLT_S/output_redo_balanced_tanh/CM_MLT_S00000204_pos/lb$res  \
    ./data/continuation_data_0531/batch_MLT_S/output_redo_balanced_tanh/CM_MLT_S00000204_neg/lb$res  \
    ./data/continuation_data_0531/batch_MLT_S/output_redo_balanced_tanh/CM_MLT_S00000400_pos/lb$res  \
-    --legend '$H_S=58\mathrm{m}$' '' '$H_S=204\mathrm{m}$' '' '$H_S=400\mathrm{m}$' \
-    --colors "red" "red" "darkgreen" "darkgreen" "blue" \
+    --legend '$H_S=58\mathrm{m}$' '$H_S=204\mathrm{m}$' '' '$H_S=400\mathrm{m}$' \
+    --colors "red" "darkgreen" "darkgreen" "blue" \
     --gamma-rng -0.01 1.5  \
-    --psi-fixed-rng -2 12 \
+    --psi-rng -2 12 \
     --s1000-rng 0.5 3.5   \
     --db_ns-rng -2 5.5    \
     --db_ew-rng -5.5 5    \

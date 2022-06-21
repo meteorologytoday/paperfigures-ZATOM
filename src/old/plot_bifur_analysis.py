@@ -44,7 +44,7 @@ parser.add_argument('--output-bifur', default="")
 parser.add_argument('--output-marks', default="")
 parser.add_argument('--offset-marks', type=float, default=0)
 parser.add_argument('--gamma-rng', nargs=2, type=float, default=[np.nan, np.nan])
-parser.add_argument('--psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--psi-fixed-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--s1000-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ns-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ew-rng', nargs=2, type=float, default=[np.nan, np.nan])
@@ -59,7 +59,7 @@ pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(args)
 
 repNaN2None(args.gamma_rng)
-repNaN2None(args.psi_rng)
+repNaN2None(args.psi_fixed_rng)
 repNaN2None(args.s1000_rng)
 repNaN2None(args.db_ns_rng)
 repNaN2None(args.db_ew_rng)
@@ -69,7 +69,7 @@ repNaN2None(args.cvt_e_rng)
 data = []
 coor = {}
 
-target_vars = ["psi1000", "db_ew", "s1000", "chi1000", "cvt_e", "cvt_w"]
+yvars = ["Psib", "s1000", "db_ns", "db_ew"]
 
 folders = args.folder
 legends   = args.legend
@@ -121,12 +121,14 @@ for rm_idx in data_to_delete:
     del data[rm_idx]
     del legends[rm_idx]
 
+# remove data points that is not converging
+for d in data:
+    for v in yvars:
+        d[v][d["res"] > args.residue_threshold] = np.nan
 
 for d in data:
     
     d["Q"] /= 1e6
-    d["chi1000"] /= 1e6 * 1e-6
-    d["psi1000"] /= 1e6 
     d["Psib"] /= 1e6
     d["db_ns"] *= 1e3
     d["db_ew"] *= 1e3
@@ -138,17 +140,6 @@ for d in data:
 
     print("z_ind = %d, y_ind = %d" % (z_ind, y_ind)) 
     d["psi_fixed"] = d["Psib"][:, y_ind, z_ind] 
-
-# remove data points that is not converging
-for d in data:
-    nan_idx = d["res"] > args.residue_threshold
-    d["Q"][nan_idx] = np.nan
-#    d["Q"][d["Q"] < 0.075] = np.nan
-    d["Q"][d["Q"] > args.gamma_rng[1]] = np.nan
-    for v in target_vars:
-        d[v][nan_idx] = np.nan
- 
-
 
 # Pick out the marks
 def dist(x1,y1,x2,y2):
@@ -206,56 +197,11 @@ print("Data loaded. Plotting now...")
 plot_z_W = coor["z_W"] / 1e3
 plot_z_T = coor["z_T"] / 1e3
 
-# Multi linear regression
-from sklearn.linear_model import LinearRegression
-for i in range(len(legends)):
-    
-    print("Doing linear regression of %s (%s)" % (legends[i], folders[i]))
-
-    d = data[i]
-
-    Q  = d["Q"]
-    chi_dbdz = d["chi1000"] * d["s1000"]
-    dq = d["cvt_w"] - d["cvt_e"]
-    db_ew = d["db_ew"]
-    psi = d["psi1000"]
-
-    used_idx = np.isfinite(Q)
-    Q        = Q[used_idx]
-    chi_dbdz = chi_dbdz[used_idx]
-    dq       = dq[used_idx]
-    db_ew    = db_ew[used_idx]
-    psi      = psi[used_idx]
-
-    if len(Q) == 0:
-        print("This case has no valid point")
-        continue
-
-    X = np.zeros((len(Q), 3))
-#    X[:, 0] = db_ew[:]
-    X[:, 0] = chi_dbdz[:]
-    X[:, 1] = dq[:]
-    X[:, 2] = Q[:]
-
-    #y = d["db_ew"][used_idx]
-    y = db_ew
-    reg = LinearRegression(normalize=True).fit(X, y)
-    y_predict = reg.predict(X) 
-   
-    print(reg.score(X, y))
-    print(reg.coef_)
- 
-    fig, ax = plt.subplots(1, 1, figsize=(4, 4), constrained_layout=True)
-    ax.scatter(y, y_predict)
-    ax.set_title(legends[i])
-
-
-#
 fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
 
 ax_flat = ax.flatten(order='F')
        
-
+target_vars = ["psi_fixed", "db_ew", "s1000", "db_ns", "cvt_e", "cvt_w"]
 
 for i in range(len(legends)):
     
@@ -306,27 +252,23 @@ ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25)
 
 
 labels = {
-    "psi_fixed" : r"$\left\langle\psi\right\rangle$",
-    "psi1000" : r"$\left\langle\psi\right\rangle$",
-    "chi1000"   : r"$\left\langle\chi\right\rangle$",
-    "s1000"  : r"$\left\langle\partial_z \overline{b} \right\rangle$",
+    "psi_fixed"  : r"$\psi$",
+    "s1000"  : r"$s$",
     "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",
-    "db_ns"  : r"$\left\langle\partial_y b_e^* \right\rangle$",
-    "db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
-    "cvt_e"  : r"$\left\langle\tilde{q}_e\right\rangle$",
-    "cvt_w"  : r"$\left\langle\tilde{q}_w\right\rangle$",
+    "db_ns"  : r"$\delta b$",
+    "db_ew"  : r"$b_e^* - b_w^*$",
+    "cvt_e"  : r"$\tilde{q}_e$",
+    "cvt_w"  : r"$\tilde{q}_w$",
 }
 
 units = {
-    "psi_fixed"   : "[Sv]",
-    "chi1000"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
-    "psi1000"     : "[Sv]",
-    "s1000"       : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "psi_fixed" : "[Sv]",
+    "s1000"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "s1000_hlat"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
-    "db_ns"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
-    "db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
-    "cvt_e"       : r"",
-    "cvt_w"       : r"",
+    "db_ns"  : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "db_ew"  : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "cvt_e"  : r"",
+    "cvt_w"  : r"",
 }
 
 for l, var in enumerate(target_vars):
@@ -455,6 +397,8 @@ if nmarkpairs != 0:
     
     if args.output_marks != "":
         fig2.savefig(args.output_marks, dpi=300)
+
+
 
 plt.show()
 
