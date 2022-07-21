@@ -69,7 +69,7 @@ repNaN2None(args.cvt_e_rng)
 data = []
 coor = {}
 
-target_vars = ["psi1000", "db_ew", "s1000", "chi1000", "cvt_e", "cvt_w"]
+target_vars = ["psi1000", "db_ew", "s1000_hlat", "chi1000", "d_cvt", "chi_dbdz"] #"cvt_e", "cvt_w"]
 
 folders = args.folder
 legends   = args.legend
@@ -313,8 +313,10 @@ labels = {
     "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",
     "db_ns"  : r"$\left\langle\partial_y b_e^* \right\rangle$",
     "db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
-    "cvt_e"  : r"$\left\langle\tilde{q}_e\right\rangle$",
-    "cvt_w"  : r"$\left\langle\tilde{q}_w\right\rangle$",
+    "cvt_e"  : r"$\tilde{q}_e$",
+    "cvt_w"  : r"$\tilde{q}_w$",
+    "d_cvt"  : r"$\Delta \tilde{q}$",
+    "chi_dbdz"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
 }
 
 units = {
@@ -327,6 +329,8 @@ units = {
     "db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
     "cvt_e"       : r"",
     "cvt_w"       : r"",
+    "d_cvt"       : r"",
+    "chi_dbdz"    : r"",
 }
 
 for l, var in enumerate(target_vars):

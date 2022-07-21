@@ -20,9 +20,9 @@ name_pairs=(
     figure-stommel_bifurcation_phase.png          fig06.png
     ZATOM_bifur_analysis_xi.png                   fig07.png
     ZATOM_bifur_analysis_xi_marks.png             fig08.png
-    ZATOM_bifur_analysis_MLT_S.png                fig09.png
-    ZATOM_bifur_analysis_MLT_S_marks.png          fig10.png
-    figure-ZATOM_bifurcation_phase.png            fig11.png
+    figure-ZATOM_bifurcation_phase.png            fig09.png
+    ZATOM_bifur_analysis_MLT_S.png                fig10.png
+    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))

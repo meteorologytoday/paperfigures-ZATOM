@@ -12,8 +12,8 @@ python3 src/plot_bifur_analysis_new.py --folder \
     --s1000-rng  2 3   \
     --db_ew-rng -3.5 4    \
     --db_ns-rng  3 6    \
-    --cvt_e-rng -0.01 0.2    \
-    --cvt_w-rng -0.01 0.2    \
+    --cvt_e-rng -0.01 0.7    \
+    --cvt_w-rng -0.01 0.7    \
     --offset-marks 0.01 \
     --output-bifur "figures/ZATOM_bifur_analysis_xi.png" \
     --marks 0.0         2.09   \
@@ -26,7 +26,7 @@ python3 src/plot_bifur_analysis_new.py --folder \
 
 fi
 
-python3 src/plot_bifur_analysis_new.py --folder \
+python3 src/plot_bifur_analysis.py --folder \
    ./data/continuation_data_0531/batch_std20/output_redo_balanced_tanh/CM_xi-0000050_pos/lb$res  \
    ./data/continuation_data_0531/batch_std20/output_redo_balanced_tanh/CM_xi00000000_pos/lb$res  \
    ./data/continuation_data_0531/batch_std20/output_redo_balanced_tanh/CM_xi00000050_pos/lb$res  \

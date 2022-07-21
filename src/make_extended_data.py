@@ -46,6 +46,17 @@ def makeExtendedData(data, coor):
     db_ew = np.average(db_ew, weights=coor["cos_lat"], axis=1) 
     data["db_ew"] = db_ew
 
+    #
+
+    b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
+    s_W = ( b_mean[:, :, 0:z1000_ind] - b_mean[:, :, 1:z1000_ind+1] ) / ( coor["z_T"][1:z1000_ind+1] - coor["z_T"][0:z1000_ind] )
+    s_T = (s_W[:, :, :-1] + s_W[:, :, 1:]) / 2.0
+
+    chi_dbdz = s_T * chi_T[:, :, 1:z1000_ind]
+
+    chi_dbdz_vavg = np.average( chi_dbdz, weights=coor["dz_T"][1:z1000_ind], axis=2)
+    data["chi_dbdz"] = np.average( chi_dbdz_vavg[:, :], weights=coor["cos_lat"], axis=1)
+ 
     # Convective mixing and convectivity
   
     be = data["be"]
@@ -71,8 +82,8 @@ def makeExtendedData(data, coor):
     data["dwf_west"] = dwf_west
     data["cvt_e"] = cvt_e
     data["cvt_w"] = cvt_w
-
-  
+    data["d_cvt"] = cvt_w - cvt_e
+    data["chi_dbdz"] = data["chi1000"] * data["s1000"]  
 
 
 
@@ -92,14 +103,16 @@ def computeDeepWaterFormationGrids(b):
 def computeConvectivity(flags):
     
     cnt = 0
+
     # Search from surface
     for j in range(flags.shape[0]):
         for k in range(flags.shape[1]):
             if flags[j, k]:
                 cnt += 1
             else:
-                break
-
+                pass    # count all flags
+                #break  # only count if it is unstable all the way to the top
+    
     return cnt / flags.size
 
 
