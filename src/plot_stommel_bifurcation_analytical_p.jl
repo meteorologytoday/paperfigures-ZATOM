@@ -44,14 +44,14 @@ for (i, (ξ, θ)) in enumerate(ξ_θs)
     )
 
     ψs = collect(range(ψ_rng..., length=1001))
-    ps = (1 .+ abs.(ψs)) .* (1 .- (ψs .- ψ0 ) / (coe.μ .* (1 .+ coe.θ))) ./ ( 1 .- coe.ν * ξ / (coe.μ .* (1 .+ coe.θ)) * ( 1 .+ abs.(ψs)) )
+    ps = (1 .+ abs.(ψs)) .* (1 .- ψs / coe.μ) ./ ( 1 .- coe.ν * ξ / coe.μ * ( 1 .+ abs.(ψs)) )
 
     d_dydτ_dy = - ( 1 .+ abs.(ψs) ) + coe.μ .* (1 .+ coe.θ) * sign.(ψs) .* (1 .- (ψs .- coe.ν * ps * ξ) / (coe.μ .* (1 .+ coe.θ)))
     stable = d_dydτ_dy .< 0
 
     vals, rngs = detectRanges(stable)
     
-    color = ["black", "red", "blue", "green", "orange", "purple"][i]
+    color = ["black", "red", "orange", "green", "blue", "purple"][i]
     for (k, rng) in enumerate(rngs)
 
         args = Dict()
@@ -74,7 +74,8 @@ end
 
 ax.set_xlim([0, 3])
 ax.set_ylim([-1, 5])
-ax.legend(loc="center right",)
-fig.savefig("figures/figure-stommel_bifurcation_analytical.png", dpi=300)
+ax.text(0.05, 0.95, "(a)", size=25, va="top", ha="left", transform=ax.transAxes)
+#ax.legend(loc="center right",)
+fig.savefig("figures/figure-stommel_bifurcation_analytical_p.png", dpi=300)
 
 plt.show()

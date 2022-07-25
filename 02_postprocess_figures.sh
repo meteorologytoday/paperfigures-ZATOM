@@ -13,6 +13,16 @@ echo "Making final figures... "
 #    \( figures/figure-ZATOM_bifurcation_phase.png \) -gravity center -append \
 #     figures/merged-phase-diagram.png
 
+#convert \( figures/figure-stommel_bifurcation_phase.png \) \
+#    \( figures/figure-ZATOM_bifurcation_phase.png \) -gravity center -append \
+#     figures/merged-phase-diagram.png
+
+echo "Doing merging"
+convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
+    \( figures/figure-stommel_bifurcation_analytical_xi.png \) -gravity North +append \
+     figures/merged-stommel_bifurcation_analytical.png
+
+
 name_pairs=(
     figure-forcing.png                            fig03.png
     figure-reduced_stommel.png                    fig04.png
