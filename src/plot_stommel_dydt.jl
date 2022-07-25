@@ -24,7 +24,6 @@ example_coe = (p, ξ, μ, θ, ν)
 
 
 fig, ax = plt.subplots(1, 1, figsize=(6, 4), constrained_layout=true)
-
 for ξ in [-1.0, -2.0, 1.0, 0.0]
 
     if ξ == 0.0
@@ -73,6 +72,10 @@ ax.plot([y_ss[1], y_ss[1]], [ 0, -0.5 ], color="#888888", linestyle="dashed")
 ax.plot([y_ss[3], y_ss[3]], [ 0, -0.5 ], color="#888888", linestyle="dashed")
 ax.text(y_ss[1], -0.5, "thermal", color="red", ha="center", va="top")
 ax.text(y_ss[3], -0.5, "haline", color="red", ha="center", va="top")
+
+# Dot the intersected point
+ax.scatter([p,], [0,], s=10, marker="o", color="black", zorder=50)
+ax.text(p, - 0.2, "\$\\left(p, 0\\right)\$", color="black", ha="center", va="top", fontsize=11)
 
 # Dot the lowest point on the parabola
 y_low = (1 + μ * (1 + θ) + ν * p * ξ) / (2 * μ * (1 + θ))

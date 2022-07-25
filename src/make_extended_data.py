@@ -11,6 +11,8 @@ import numpy as np
     xxxx.nc file.
 """
 def makeExtendedData(data, coor):
+    
+    Ns = data["Psib"].shape[0]
 
     data["bw_bnd"] = data["be"] + 2 * ( data["bw"] - data["be"] )
     chi_T = (data["chi"][:, :, :-1] + data["chi"][:, :, 1:]) / 2
@@ -64,10 +66,10 @@ def makeExtendedData(data, coor):
     dwf_east = np.zeros(be.shape)
     dwf_west = np.zeros(be.shape)
 
-    cvt_e = np.zeros( (len(data["Q"]),) )
-    cvt_w = np.zeros( (len(data["Q"]),) )
+    cvt_e = np.zeros( (Ns,) )
+    cvt_w = np.zeros( (Ns,) )
 
-    for j in range(len(data["Q"])):
+    for j in range(Ns):
 
         flags_e = computeDeepWaterFormationGrids(be[j, :, :])
         flags_w = computeDeepWaterFormationGrids(bw[j, :, :])

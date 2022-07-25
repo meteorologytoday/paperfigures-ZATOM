@@ -43,8 +43,7 @@ parser.add_argument('--auto-color', action="store_true")
 parser.add_argument('--output-bifur', default="")
 parser.add_argument('--output-marks', default="")
 parser.add_argument('--offset-marks', type=float, default=0)
-parser.add_argument('--param', type=str, choices=["gammma", "xi"])
-parser.add_argument('--param-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--gamma-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--s1000-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ns-rng', nargs=2, type=float, default=[np.nan, np.nan])
@@ -59,7 +58,7 @@ args = parser.parse_args()
 pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(args)
 
-repNaN2None(args.param_rng)
+repNaN2None(args.gamma_rng)
 repNaN2None(args.psi_rng)
 repNaN2None(args.s1000_rng)
 repNaN2None(args.db_ns_rng)
@@ -86,22 +85,12 @@ if len(args.marks) % 2 != 0:
     raise Exception("Length of mark is not multiple of 2. It has to be a list of (x, y) pairs. ")
 
 
-#
-if args.param == "gamma":
-    print("Using freshwater forcing as bifurcation parameter.")
-    param = "Q"
-
-elif args.param == "xi":
-    print("Using zonal asymmetry as bifurcation parameter.")
-    param = "xi"
-
-
 # Data contains a list of folders (cases)
 # and each case has multiple data files
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Psib", "chi", param, "be", "bw", "res", "stable"]
+loaded_varnames = ["Psib", "chi", "Q", "be", "bw", "res", "stable"]
 for i, folder in enumerate(folders):
 
     print("Loading the folder: %s" % (folder,))
@@ -116,7 +105,7 @@ for i, folder in enumerate(folders):
         data.append(None)
         continue
  
-    print("Number of records: %d" % (len(_data[param]))) 
+    print("Number of records: %d" % (len(_data["Q"]))) 
     if coor is None:
         coor = _coor
 
@@ -134,10 +123,8 @@ for rm_idx in data_to_delete:
 
 
 for d in data:
-   
-    if param == "Q": 
-        d[param] /= 1e6
-
+    
+    d["Q"] /= 1e6
     d["chi1000"] /= 1e6 * 1e-6
     d["psi1000"] /= 1e6 
     d["Psib"] /= 1e6
@@ -155,9 +142,9 @@ for d in data:
 # remove data points that is not converging
 for d in data:
     nan_idx = d["res"] > args.residue_threshold
-    d[param][nan_idx] = np.nan
+    d["Q"][nan_idx] = np.nan
 #    d["Q"][d["Q"] < 0.075] = np.nan
-    d[param][d[param] > args.param_rng[1]] = np.nan
+    d["Q"][d["Q"] > args.gamma_rng[1]] = np.nan
     for v in target_vars:
         d[v][nan_idx] = np.nan
  
@@ -172,10 +159,10 @@ shortest_dist = np.zeros((nmarkpairs,)) + 1e5
 mark_index = np.zeros((nmarkpairs, 2), dtype=int) - 1
         
 for k in range(nmarkpairs):
-    print("Search for the marker case closest to : (%s, psi) = (%f, %f)" % (param, args.marks[k*2], args.marks[k*2+1]))
+    print("Search for the marker case closest to : (gamma, psi) = (%f, %f)" % (args.marks[k*2], args.marks[k*2+1]))
     for i, d in enumerate(data):
-        for s in range(len(d[param])):
-            _dist = dist(d[param][s]*10, d["psi_fixed"][s], args.marks[k*2]*10, args.marks[k*2+1])
+        for s in range(len(d["Q"])):
+            _dist = dist(d["Q"][s]*10, d["psi_fixed"][s], args.marks[k*2]*10, args.marks[k*2+1])
             if _dist < shortest_dist[k]:
                 shortest_dist[k] = _dist
                 mark_index[k, 0] = i
@@ -219,6 +206,51 @@ print("Data loaded. Plotting now...")
 plot_z_W = coor["z_W"] / 1e3
 plot_z_T = coor["z_T"] / 1e3
 
+# Multi linear regression
+from sklearn.linear_model import LinearRegression
+for i in range(len(legends)):
+    
+    print("Doing linear regression of %s (%s)" % (legends[i], folders[i]))
+
+    d = data[i]
+
+    Q  = d["Q"]
+    chi_dbdz = d["chi1000"] * d["s1000"]
+    dq = d["cvt_w"] - d["cvt_e"]
+    db_ew = d["db_ew"]
+    psi = d["psi1000"]
+
+    used_idx = np.isfinite(Q)
+    Q        = Q[used_idx]
+    chi_dbdz = chi_dbdz[used_idx]
+    dq       = dq[used_idx]
+    db_ew    = db_ew[used_idx]
+    psi      = psi[used_idx]
+
+    if len(Q) == 0:
+        print("This case has no valid point")
+        continue
+
+    X = np.zeros((len(Q), 3))
+#    X[:, 0] = db_ew[:]
+    X[:, 0] = chi_dbdz[:]
+    X[:, 1] = dq[:]
+    X[:, 2] = Q[:]
+
+    #y = d["db_ew"][used_idx]
+    y = db_ew
+    reg = LinearRegression(normalize=True).fit(X, y)
+    y_predict = reg.predict(X) 
+   
+    print(reg.score(X, y))
+    print(reg.coef_)
+ 
+    fig, ax = plt.subplots(1, 1, figsize=(4, 4), constrained_layout=True)
+    ax.scatter(y, y_predict)
+    ax.set_title(legends[i])
+
+
+#
 fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
 
 ax_flat = ax.flatten(order='F')
@@ -238,7 +270,7 @@ for i in range(len(legends)):
         
         rng = rngs[j]
 
-        x   = d[param][rng]
+        x   = d["Q"][rng]
         res = d["res"][rng]
 
 
@@ -267,8 +299,8 @@ for k in range(nmarkpairs):
     
     for l, var in enumerate(target_vars):
         #ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="yellow", edgecolor="k", zorder=50)
-        ax_flat[l].scatter(d[param][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
-        ax_flat[l].text(d[param][s] + args.offset_marks, d[var][s], "123456789"[k], size=12, va="center", ha="left")
+        ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
+        ax_flat[l].text(d["Q"][s] + args.offset_marks, d[var][s], "123456789"[k], size=12, va="center", ha="left")
 
 ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25)
 
@@ -308,13 +340,8 @@ for l, var in enumerate(target_vars):
     if hasattr(args, ylim_attr):
         ax_flat[l].set_ylim(getattr(args, ylim_attr))
 
-    if param == "gamma":
-        ax_flat[l].set_xlabel("$\\gamma$ [Sv]")
-    elif param == "xi":
-        ax_flat[l].set_xlabel("$\\xi$")
-
-
-    ax_flat[l].set_xlim(args.param_rng)
+    ax_flat[l].set_xlabel("$\\gamma$ [Sv]")
+    ax_flat[l].set_xlim(args.gamma_rng)
     ax_flat[l].set_title("(%s) %s" % ("abcdefg"[l], labels[var],))
 
 if args.output_bifur != "":
@@ -402,10 +429,7 @@ if nmarkpairs != 0:
  
 
 
-        if param == "Q":
-            _ax[0].set_title("State %s ($%.2f \\, \\mathrm{Sv}$)" % ("123456789"[k], d[param][s]))
-        elif param == "xi":
-            _ax[0].set_title("State %s ($%.2f$)" % ("123456789"[k], d[param][s]))
+        _ax[0].set_title("State %s ($%.2f \\, \\mathrm{Sv}$)" % ("123456789"[k], d["Q"][s]))
 
         if k == 0:
             for __ax in _ax:

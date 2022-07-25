@@ -2,12 +2,7 @@ using Formatting
 include("detect_ranges.jl")
 
 
-ξ_θs = [
-    ( 1.0, 0.0),
-    ( 0.5, 0.0),
-    ( 0.0, 0.0),
-    (-5.0, 0.0),
-]
+ps = [ 0, 0.5, 1, 1.5 , 2, 2.5]
 ψ0 = 0.0
 ψ_rng = [-4, 6]
 
@@ -33,20 +28,19 @@ ax.set_xlabel("\$p\$", fontsize=25)
 ax.set_ylabel("\$\\Psi\$", fontsize=25)
 ax.grid()
 
-for (i, (ξ, θ)) in enumerate(ξ_θs)
+for (i, p) in enumerate(ps)
 
     coe = (
         c = 3.6e3,
         μ = 3.0,
         ν = 1.0,
-        θ = θ,
-        ξ = ξ,
+        p = p,
     )
 
     ψs = collect(range(ψ_rng..., length=1001))
-    ps = (1 .+ abs.(ψs)) .* (1 .- (ψs .- ψ0 ) / (coe.μ .* (1 .+ coe.θ))) ./ ( 1 .- coe.ν * ξ / (coe.μ .* (1 .+ coe.θ)) * ( 1 .+ abs.(ψs)) )
+    ξs = coe.μ / coe.ν * ( (1 .- ψs / coe.μ) / coe.p .- 1 ./ (1 .+ abs.(ψs)) )
 
-    d_dydτ_dy = - ( 1 .+ abs.(ψs) ) + coe.μ .* (1 .+ coe.θ) * sign.(ψs) .* (1 .- (ψs .- coe.ν * ps * ξ) / (coe.μ .* (1 .+ coe.θ)))
+    d_dydτ_dy = - ( 1 .+ abs.(ψs) ) + coe.μ * sign.(ψs) .* (1 .- (ψs .- coe.ν * ps * ξ) / coe.μ )
     stable = d_dydτ_dy .< 0
 
     vals, rngs = detectRanges(stable)
@@ -56,25 +50,24 @@ for (i, (ξ, θ)) in enumerate(ξ_θs)
 
         args = Dict()
         if k==1
-            #args[:label] = format("\$\\left(\\xi, \\theta \\right) = \\left( {:.1f}, {} \\right) \$", ξ, θ)
-            #args[:label] = format("\$\\xi = {:.1f} \$", ξ)
+            args[:label] = format("\$p = {:f} \$", coe.p)
         else
             args[:label] = nothing
         end
 
         args[:linestyle] = (vals[k] == 0) ? "dotted" : "solid"
         args[:color] = color
-        ax.plot(ps[rng], ψs[rng]; args...)
+        ax.plot(ξs[rng], ψs[rng]; args...)
 
     end
         
-    ax.text(label_positions[i]..., format("\$\\xi = {:.1f} \$", ξ), va="center", ha="center", color=color, size=15)
+    #ax.text(label_positions[i]..., format("\$\\xi = {:.1f} \$", ξ), va="center", ha="center", color=color, size=15)
 
 end
 
-ax.set_xlim([0, 3])
+ax.set_xlim([-10, 10])
 ax.set_ylim([-1, 5])
 ax.legend(loc="center right",)
-fig.savefig("figures/figure-stommel_bifurcation_analytical.png", dpi=300)
+fig.savefig("figures/figure-stommel_bifurcation_analytical_xi.png", dpi=300)
 
 plt.show()
