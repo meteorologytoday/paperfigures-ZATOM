@@ -270,7 +270,7 @@ for k in range(nmarkpairs):
         ax_flat[l].scatter(d[param][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
         ax_flat[l].text(d[param][s] + args.offset_marks, d[var][s], "123456789"[k], size=12, va="center", ha="left")
 
-ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25)
+ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, loc="upper left")
 
 
 labels = {
