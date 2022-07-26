@@ -3,11 +3,11 @@ using Roots
 
 
 ξs = collect(range(-10, 5,  length=1001))
+ps = collect(range(  1, 5,  length=1001))
+μ = 3.0
+ν = 1.0
 
-
-function generate_bnds(ξs, θ)
-
-    println("Doing θ = $θ")
+function generate_bnds_p(ξs)
 
     p_left_bnd  = zeros(Float64, length(ξs))
     p_right_bnd = zeros(Float64, length(ξs))
@@ -18,22 +18,20 @@ function generate_bnds(ξs, θ)
     for (j, ξ) in enumerate(ξs)
 
         coe = (
-            c = 3.6e3,
-            μ = 3.0,
-            ν = 1.0,
+            μ = μ,
+            ν = ν,
             ξ = ξ,
-            θ = θ,
         )
 
-        α = - coe.ν * coe.ξ / ( coe.μ * (1 + coe.θ) )
+        α = - coe.ν * coe.ξ / coe.μ
      
-        Δ = (1+α)^2 - α * (1 + α - coe.μ * (1 + coe.θ) )
-        Δ2 = ( coe.μ * (1 + coe.θ) )^2 - coe.μ * (1 + coe.θ) + coe.ν * ξ
+        Δ = (1+α)^2 - α * (1 + α - coe.μ )
+        Δ2 = coe.μ ^2 - coe.μ + coe.ν * ξ
         
-        f(ψ) = α * ψ^2 + 2 * (1 + α) * ψ + (1 + α - coe.μ * (1 + coe.θ))
+        f(ψ) = α * ψ^2 + 2 * (1 + α) * ψ + (1 + α - coe.μ)
         dfdψ(ψ) = 2 * α * ψ + 2 * (1 + α)
 
-        p(ψ) = (1 + abs(ψ)) * (1 - ψ / ( coe.μ * (1 + coe.θ) )) / ( 1 - coe.ν * ξ / ( coe.μ * (1 + coe.θ) ) * ( 1 + abs(ψ)) )
+        p(ψ) = (1 + abs(ψ)) * (1 - ψ / coe.μ ) / ( 1 - coe.ν * ξ / coe.μ  * ( 1 + abs(ψ)) )
 
         local ψ_left, ψ_right, p_left, p_right
 
@@ -66,6 +64,36 @@ function generate_bnds(ξs, θ)
 
 end
 
+function generate_bnds_ξ(ps)
+
+    ps = copy(ps)
+
+    ps[(ps .* μ) .< 1] .= NaN
+
+    Ψ_c  = ( ps .* μ ).^0.5 .- 1   # Critical Ψ
+
+    ξ_left_bnd  = μ / ν * ( 1 ./ (1 .+ abs.(Ψ_c)) - (1 .- Ψ_c / μ) ./ ps )
+    ξ_right_bnd = μ / ν .* ( 1 .- 1 ./ ps )
+
+    no_solution_idx = ξ_left_bnd .> ξ_right_bnd
+
+    ξ_left_bnd[no_solution_idx] .= NaN
+    ξ_right_bnd[no_solution_idx] .= NaN
+
+    return ξ_left_bnd, ξ_right_bnd
+
+end
+
+println("Compute boundaries...")
+p_left_bnd, p_right_bnd = generate_bnds_p(ξs)
+ξ_left_bnd, ξ_right_bnd = generate_bnds_ξ(ps)
+
+ξ_upper_bound = μ/ν
+ξ_lower_bound = μ/ν * ( 1 - μ )
+
+p_lower_bound = 1 / μ
+
+
 println("Loading PyPlot")
 using PyPlot
 plt = PyPlot
@@ -76,23 +104,26 @@ fig, ax = plt.subplots(1, 1, constrained_layout=true)
 ax.set_xlabel("\$p\$", fontsize=25)
 ax.set_ylabel("\$\\xi\$", fontsize=25)
 ax.grid()
-ax.set_ylim([-6.2, 1.0])
+ax.set_ylim([-7, 4.0])
 ax.set_xlim([0.0, 5])
 
 
-#ax.plot(p_left_bnd, ξs, color="red")
-#ax.plot(p_right_bnd, ξs, color="blue")
-for (i, θ) in enumerate([ 0, ])
+ax.fill_betweenx(ξs, p_left_bnd, p_right_bnd, facecolor="none", edgecolor="blue",       hatch="..", alpha=0.8, linewidth=1, zorder=10, label="Folding along fixed \$\\xi\$")
+ax.fill_between(ps, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.8, linewidth=1, zorder=10, label="Folding along fixed \$p\$")
 
-    facecolor = ["dodgerblue", "lightsalmon", "dodgerblue", "lightgreen"][i]
-    edgecolor = ["blue", "orangered", "blue", "green"][i]
-    
+ax.plot(ax.get_xlim(), [ξ_upper_bound, ξ_upper_bound], ls="dashed", color="black")
+ax.plot(ax.get_xlim(), [ξ_lower_bound, ξ_lower_bound], ls="dashed", color="black")
 
-    p_left_bnd, p_right_bnd = generate_bnds(ξs, θ)
-    ax.fill_betweenx(ξs, p_left_bnd, p_right_bnd, facecolor=facecolor, edgecolor=edgecolor, alpha=0.8, linewidth=1, zorder=10, label="\$\\theta=$θ\$")
-end
-#ax.legend(loc="lower right")
+ax.text(1.5, ξ_upper_bound + 0.2, "\$\\xi = \\mu / \\nu \$", ha="center", va="bottom")
+ax.text(1.5, ξ_lower_bound + 0.2, "\$\\xi = \\mu / \\nu \\left( 1 - \\mu \\right)\$", ha="center", va="bottom")
+
+ax.plot([p_lower_bound, p_lower_bound], ax.get_ylim(), ls="dashed", color="black")
+ax.text(p_lower_bound + 0.1, 1.5, "\$ p = 1 / \\mu \$", ha="left", va="center", rotation=0)
+
 ax.set_title("Multiple equilibria phase diagram of Stommel's two-box model")
+
+ax.legend()
+
 fig.savefig("figures/figure-stommel_bifurcation_phase.png", dpi=300)
 
 plt.show()

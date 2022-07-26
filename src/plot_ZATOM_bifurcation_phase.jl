@@ -52,8 +52,8 @@ ax.grid()
 #ax.fill_betweenx(fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3], facecolor="lightsalmon", edgecolor="orangered", alpha=0.8, linewidth=1, zorder=10, label="Folding in \$\\xi\$")
 #ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], facecolor="dodgerblue",  edgecolor="blue",      alpha=0.8, linewidth=1, zorder=10, label="Folding in \$\\gamma\$")
 
-ax.fill_betweenx(fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3], hatch="..", facecolor="none",  edgecolor="blue", alpha=0.8, linewidth=1, zorder=10, label="Folding in \$\\xi\$")
-ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], hatch="//",  facecolor="none",  edgecolor="orangered",      alpha=0.8, linewidth=1, zorder=10, label="Folding in \$\\gamma\$")
+ax.fill_betweenx(fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3], hatch="..", facecolor="none",  edgecolor="blue", alpha=0.8, linewidth=1, zorder=10, label="Folding along fixed \$\\xi\$")
+ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], hatch="//",  facecolor="none",  edgecolor="orangered",      alpha=0.8, linewidth=1, zorder=10, label="Folding along fixed \$\\gamma\$")
 
 #ax.fill_betweenx(typeB_pts[:, 1], typeB_pts[:, 2], typeB_pts[:, 3], facecolor="dodgerblue", edgecolor="blue", alpha=0.8, linewidth=1, zorder=10, label="\$\\mu_B\$")
 
