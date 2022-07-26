@@ -25,14 +25,15 @@ convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
 
 name_pairs=(
     figure-forcing.png                            fig03.png
-    figure-reduced_stommel.png                    fig04.png
-    figure-stommel_bifurcation_analytical.png     fig05.png
-    figure-stommel_bifurcation_phase.png          fig06.png
-    ZATOM_bifur_analysis_xi.png                   fig07.png
-    ZATOM_bifur_analysis_xi_marks.png             fig08.png
-    figure-ZATOM_bifurcation_phase.png            fig09.png
-    ZATOM_bifur_analysis_MLT_S.png                fig10.png
-    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png
+    ZATOM_bifur_analysis_xi.png                   fig04.png
+    ZATOM_bifur_analysis_xi_marks.png             fig05.png
+    ZATOM_bifur_gamma_xi.png                      fig06.png
+    figure-ZATOM_bifurcation_phase.png            fig07.png
+    figure-reduced_stommel.png                    fig08.png
+    merged-stommel_bifurcation_analytical.png     fig09.png
+    figure-stommel_bifurcation_phase.png          fig10.png
+    ZATOM_bifur_analysis_MLT_S.png                fig11.png
+    ZATOM_bifur_analysis_MLT_S_marks.png          fig12.png
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))
