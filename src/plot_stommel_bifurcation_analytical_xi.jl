@@ -90,7 +90,7 @@ ax.annotate("\$ C_1 = \\left( \\frac{\\mu}{\\left( 1 + \\mu \\right) \\nu }, \\m
 _p = 0.5
 C2 = ( μ / ν * (1 - 1 / _p), 0 )
 ax.scatter(C2..., s=20, marker="o", color="black", zorder=99)
-ax.annotate("\$ C_2 = \\left( \\frac{\\mu}{\\nu} \\left( 1 - \\frac{1}{p} \\right), 0 \\right) \$", xy=C2,  xycoords="data",
+ax.annotate("\$ C_3 = \\left( \\frac{\\mu}{\\nu} \\left( 1 - \\frac{1}{p} \\right), 0 \\right) \$", xy=C2,  xycoords="data",
             xytext=(-3, -.7), textcoords="data",
             arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
             horizontalalignment="center", verticalalignment="center", fontsize=13,
