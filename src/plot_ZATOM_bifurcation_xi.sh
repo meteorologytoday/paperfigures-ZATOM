@@ -5,7 +5,7 @@ res=8
 if [ ] ; then
 python3 src/plot_bifur_analysis_new.py --folder \
    ./data/continuation_data_0531/batch_std20/output_redo_balanced_tanh/CM_xi00000100_pos/lb$res  \
-    --legend '$\xi'"'"'=-1$' \
+    --legend '$\xi=-1$' \
     --colors "black" "orange" "red" "darkgreen" "blue" "purple"  \
     --param gamma \
     --param-rng -0.01 0.2  \
@@ -39,7 +39,7 @@ python3 src/plot_bifur_analysis.py --folder \
    ./data/continuation_data_fixed_xi_072522/batch_std20/output_redo_balanced_tanh/CM_xi-0000050_pos/lb$res  \
    ./data/continuation_data_fixed_xi_072522/batch_std20/output_redo_balanced_tanh/CM_xi-0000100_pos/lb$res  \
    ./data/continuation_data_fixed_xi_072522/batch_std20/output_redo_balanced_tanh/CM_xi-0000150_pos/lb$res  \
-    --legend '$\xi'"'"'=0.5$' '$\xi'"'"'=0$' '$\xi'"'"'=-0.5$' '$\xi'"'"'=-1$' '$\xi'"'"'=-1.5$' \
+    --legend '$\xi=0.5$' '$\xi=0$' '$\xi=-0.5$' '$\xi=-1$' '$\xi=-1.5$' \
     --colors "black" "orange" "red" "darkgreen" "blue" "purple"  \
     --param gamma \
     --param-rng -0.01 0.16  \
