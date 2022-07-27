@@ -17,10 +17,16 @@ echo "Making final figures... "
 #    \( figures/figure-ZATOM_bifurcation_phase.png \) -gravity center -append \
 #     figures/merged-phase-diagram.png
 
-echo "Doing merging"
+echo "Doing merging : analytical extended two-box model"
 convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
     \( figures/figure-stommel_bifurcation_analytical_xi.png \) -gravity North +append \
      figures/merged-stommel_bifurcation_analytical.png
+
+echo "Doing merging : regime diagrams"
+convert \( figures/figure-ZATOM_bifurcation_phase.png \) \
+    \( figures/figure-stommel_bifurcation_phase.png \) -gravity North +append \
+     figures/merged-regime_diagrams.png
+
 
 
 name_pairs=(
@@ -28,12 +34,11 @@ name_pairs=(
     ZATOM_bifur_analysis_xi.png                   fig04.png
     ZATOM_bifur_analysis_xi_marks.png             fig05.png
     ZATOM_bifur_gamma_xi.png                      fig06.png
-    figure-ZATOM_bifurcation_phase.png            fig07.png
-    figure-reduced_stommel.png                    fig08.png
-    merged-stommel_bifurcation_analytical.png     fig09.png
-    figure-stommel_bifurcation_phase.png          fig10.png
-    ZATOM_bifur_analysis_MLT_S.png                fig11.png
-    ZATOM_bifur_analysis_MLT_S_marks.png          fig12.png
+    figure-reduced_stommel.png                    fig07.png
+    merged-stommel_bifurcation_analytical.png     fig08.png
+    merged-regime_diagrams.png                    fig09.png
+    ZATOM_bifur_analysis_MLT_S.png                fig10.png
+    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))

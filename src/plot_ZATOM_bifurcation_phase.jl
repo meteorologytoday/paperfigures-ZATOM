@@ -58,7 +58,7 @@ ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], hatch="//",  fac
 #ax.fill_betweenx(typeB_pts[:, 1], typeB_pts[:, 2], typeB_pts[:, 3], facecolor="dodgerblue", edgecolor="blue", alpha=0.8, linewidth=1, zorder=10, label="\$\\mu_B\$")
 
 ax.legend(loc="lower right")
-ax.set_title("Multiple equilibria phase diagram of ZATOM")
+ax.set_title("(b)")
 fig.savefig("figures/figure-ZATOM_bifurcation_phase.png", dpi=300)
 
 plt.show()

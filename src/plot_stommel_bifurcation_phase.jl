@@ -120,7 +120,7 @@ ax.text(1.5, ξ_lower_bound + 0.2, "\$\\xi = - \\frac{\\mu  \\left( \\mu - 1 \\r
 ax.plot([p_lower_bound, p_lower_bound], ax.get_ylim(), ls="dashed", color="black")
 ax.text(p_lower_bound + 0.1, 1.5, "\$ p = \\frac{1}{\\mu} \$", ha="left", va="center", rotation=0)
 
-ax.set_title("Multiple equilibria phase diagram of Stommel's two-box model")
+ax.set_title("(b)")
 
 ax.legend()
 
