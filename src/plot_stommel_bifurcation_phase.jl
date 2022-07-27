@@ -115,7 +115,7 @@ ax.plot(ax.get_xlim(), [ξ_upper_bound, ξ_upper_bound], ls="dashed", color="bla
 ax.plot(ax.get_xlim(), [ξ_lower_bound, ξ_lower_bound], ls="dashed", color="black")
 
 ax.text(1.5, ξ_upper_bound + 0.2, "\$\\xi = \\frac{\\mu}{\\nu} \$", ha="center", va="bottom")
-ax.text(1.5, ξ_lower_bound + 0.2, "\$\\xi = \\frac{\\mu  \\left( 1 - \\mu \\right) }{\\nu }\$", ha="center", va="bottom")
+ax.text(1.5, ξ_lower_bound + 0.2, "\$\\xi = - \\frac{\\mu  \\left( \\mu - 1 \\right) }{\\nu }\$", ha="center", va="bottom")
 
 ax.plot([p_lower_bound, p_lower_bound], ax.get_ylim(), ls="dashed", color="black")
 ax.text(p_lower_bound + 0.1, 1.5, "\$ p = \\frac{1}{\\mu} \$", ha="left", va="center", rotation=0)
