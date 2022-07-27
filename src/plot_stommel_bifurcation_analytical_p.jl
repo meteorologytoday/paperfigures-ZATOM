@@ -1,9 +1,12 @@
 using Formatting
+using Roots
+
 include("detect_ranges.jl")
 
 
 ξ_θs = [
     ( 1.0, 0.0),
+    (0.749, 0.0),
     ( 0.5, 0.0),
     ( 0.0, 0.0),
     (-5.0, 0.0),
@@ -14,11 +17,18 @@ include("detect_ranges.jl")
 
 label_positions = [
     (1.25, 3.7),
-    (1.85, 2.6),
+    (1.8, 3.22),
+    (1.88, 2.6),
     (1.55, 1.7),
     (0.70, 0.5),
 ]
 
+digits = [ 1, 3, 1, 1, 1 ]
+
+
+
+μ = 3.0
+ν = 1.0
 
 println("Loading PyPlot")
 using PyPlot
@@ -27,8 +37,6 @@ println("Done")
 
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
-
-
 ax.set_xlabel("\$p\$", fontsize=25)
 ax.set_ylabel("\$\\Psi\$", fontsize=25)
 ax.grid()
@@ -36,14 +44,13 @@ ax.grid()
 for (i, (ξ, θ)) in enumerate(ξ_θs)
 
     coe = (
-        c = 3.6e3,
-        μ = 3.0,
-        ν = 1.0,
+        μ = μ,
+        ν = ν,
         θ = θ,
         ξ = ξ,
     )
 
-    ψs = collect(range(ψ_rng..., length=1001))
+    ψs = collect(range(ψ_rng..., length=10001))
     ps = (1 .+ abs.(ψs)) .* (1 .- ψs / coe.μ) ./ ( 1 .- coe.ν * ξ / coe.μ * ( 1 .+ abs.(ψs)) )
 
     d_dydτ_dy = - ( 1 .+ abs.(ψs) ) + coe.μ .* (1 .+ coe.θ) * sign.(ψs) .* (1 .- (ψs .- coe.ν * ps * ξ) / (coe.μ .* (1 .+ coe.θ)))
@@ -67,12 +74,51 @@ for (i, (ξ, θ)) in enumerate(ξ_θs)
         ax.plot(ps[rng], ψs[rng]; args...)
 
     end
+    
         
-    ax.text(label_positions[i]..., format("\$\\xi = {:.1f} \$", ξ), va="center", ha="center", color=color, size=15)
+    ax.text(label_positions[i]..., format("\$\\xi = {:.$(digits[i])f} \$", ξ), va="center", ha="center", color=color, size=15)
 
 end
 
-ax.set_xlim([0, 3])
+# B_1
+B1 = ( 0, μ )
+ax.scatter(B1..., s=20, marker="o", color="black", zorder=99)
+#ax.annotate("\$ B_1 = \\left( 0, \\mu \\right) \$", xy=B1,  xycoords="data",
+ax.annotate("\$ B_1 \$", xy=B1,  xycoords="data",
+            xytext=(0.25, 3.5), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=13,
+)
+
+# B_2
+ξ = 0.0
+
+# Look numerically for the bifurcation point
+α = - ν * ξ / μ
+f(ψ) = α * ψ^2 + 2 * (1 + α) * ψ + (1 + α - μ)
+dfdψ(ψ) = 2 * α * ψ + 2 * (1 + α)
+p(ψ) = (1 + abs(ψ)) * (1 - ψ / μ ) / ( 1 - ν * ξ / μ  * ( 1 + abs(ψ)) )
+ψ_bifur = find_zero((f, dfdψ), 0.0, Roots.Newton())
+
+B2 = ( p(ψ_bifur), ψ_bifur )
+ax.scatter(B2..., s=20, marker="o", color="black", zorder=99)
+ax.annotate("\$ B_2 \$", xy=B2,  xycoords="data",
+            xytext=(1.6, 1.0), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=13,
+)
+
+# B_3
+B3 = ( p(0.0), 0 )
+ax.scatter(B3..., s=20, marker="o", color="black", zorder=99)
+ax.annotate("\$ B_3 \$", xy=B3,  xycoords="data",
+            xytext=(1.0, -0.5), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="top", fontsize=13,
+)
+
+
+ax.set_xlim([-0.1, 3])
 ax.set_ylim([-1, 5])
 ax.text(0.05, 0.95, "(a)", size=25, va="top", ha="left", transform=ax.transAxes)
 #ax.legend(loc="center right",)

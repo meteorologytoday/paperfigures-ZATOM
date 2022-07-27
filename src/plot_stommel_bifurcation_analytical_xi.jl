@@ -78,23 +78,41 @@ for (i, p) in enumerate(ps)
 
 end
 
+p = 1.0
+ξ(ψ) = μ / ν * ( 1 / (1 + abs(ψ)) - (1 - ψ / μ) / p )
+
+# C1
 # ξ, ψ
 C1 = ( μ / (1 + μ) / ν , μ )
 ax.scatter(C1..., s=20, marker="o", color="black", zorder=99)
-ax.annotate("\$ C_1 = \\left( \\frac{\\mu}{\\left( 1 + \\mu \\right) \\nu }, \\mu \\right) \$", xy=C1,  xycoords="data",
-            xytext=(-2, 3.5), textcoords="data",
-            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
+#ax.annotate("\$ C_1 = \\left( \\frac{\\mu}{\\left( 1 + \\mu \\right) \\nu }, \\mu \\right) \$", xy=C1,  xycoords="data",
+ax.annotate("\$ C_1 \$", xy=C1,  xycoords="data",
+            xytext=(0.3, 3.5), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
             horizontalalignment="center", verticalalignment="center", fontsize=13,
 )
 
-_p = 0.5
-C2 = ( μ / ν * (1 - 1 / _p), 0 )
+# C2
+ψ_bifur = (p * μ)^0.5 - 1
+C2 = ( ξ(ψ_bifur), ψ_bifur )
 ax.scatter(C2..., s=20, marker="o", color="black", zorder=99)
-ax.annotate("\$ C_3 = \\left( \\frac{\\mu}{\\nu} \\left( 1 - \\frac{1}{p} \\right), 0 \\right) \$", xy=C2,  xycoords="data",
-            xytext=(-3, -.7), textcoords="data",
-            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "width" => 0.5),
+ax.annotate("\$ C_2 \$", xy=C2,  xycoords="data",
+            xytext=(-1.5, ψ_bifur), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
             horizontalalignment="center", verticalalignment="center", fontsize=13,
 )
+
+# C3
+C3 = ( μ / ν * (1 - 1 / p), 0 )
+ax.scatter(C3..., s=20, marker="o", color="black", zorder=99)
+#ax.annotate("\$ C_3 = \\left( \\frac{\\mu}{\\nu} \\left( 1 - \\frac{1}{p} \\right), 0 \\right) \$", xy=C3,  xycoords="data",
+ax.annotate("\$ C_3 \$", xy=C3,  xycoords="data",
+            xytext=(-1.5, 0), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=13,
+)
+
+
 ax.set_xlim([-6, 4])
 ax.set_ylim([-1, 5])
 ax.text(0.05, 0.95, "(b)", size=25, va="top", ha="left", transform=ax.transAxes)
