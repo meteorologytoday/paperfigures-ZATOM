@@ -113,6 +113,22 @@ ax.annotate("\$ C_3 \$", xy=C3,  xycoords="data",
 )
 
 
+#=
+# Plot the line connecting C2
+ξ(ψ, p) = μ / ν * ( 1 / (1 + abs(ψ)) - (1 - ψ / μ) / p )
+ps = range(0, 100, length=1001) |> collect
+ψ_bifurs = (ps .* μ).^0.5 .- 1
+ξs = [ξ(ψ_bifurs[i], ps[i]) for i = 1:length(ps)]
+
+ax.plot(ξs, ψ_bifurs, "--", color="#bbbbbb", zorder=99)
+#ax.annotate("\$ C_3 = \\left( \\frac{\\mu}{\\nu} \\left( 1 - \\frac{1}{p} \\right), 0 \\right) \$", xy=C3,  xycoords="data",
+ax.annotate("\$ C_3 \$", xy=C3,  xycoords="data",
+            xytext=(-1.5, 0), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=13,
+)
+=#
+
 ax.set_xlim([-6, 4])
 ax.set_ylim([-1, 5])
 ax.text(0.05, 0.95, "(b)", size=25, va="top", ha="left", transform=ax.transAxes)
