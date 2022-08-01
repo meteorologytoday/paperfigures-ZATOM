@@ -15,6 +15,7 @@ plot_codes=(
     $bs $srcdir/plot_ZATOM_bifurcation_MLT_S.sh
     $jl $srcdir/plot_ZATOM_bifurcation_phase.jl
     $py $srcdir/plot_ZATOM_bifurcation_gamma_xi.py
+    $jl $srcdir/plot_ZATOM_bifurcation_phase_HS.jl
 )
 
 # Some code to download data and extract them

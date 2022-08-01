@@ -30,16 +30,17 @@ convert \( figures/figure-ZATOM_bifurcation_phase.png \) \
 
 
 name_pairs=(
-    figure-forcing.png                            fig03.png
+    figure-forcing.png                            fig02.png
     ZATOM_bifur_analysis_xi.png                   fig04.png
     ZATOM_bifur_analysis_xi_marks.png             fig05.png
     ZATOM_bifur_gamma_xi.png                      fig06.png
     figure-reduced_stommel.png                    fig07.png
     merged-stommel_bifurcation_analytical.png     fig08.png
     merged-regime_diagrams.png                    fig09.png
-    ZATOM_bifur_analysis_MLT_S.png                fig10.png
-    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png
+    figure-ZATOM_bifurcation_phase_HS.png         fig10.png
 )
+#    ZATOM_bifur_analysis_MLT_S.png                fig10.png
+#    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png
 
 N=$(( ${#name_pairs[@]} / 2 ))
 echo "We have $N figure(s) to rename."
