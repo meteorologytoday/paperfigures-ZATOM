@@ -22,10 +22,10 @@ convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
     \( figures/figure-stommel_bifurcation_analytical_xi.png \) -gravity North +append \
      figures/merged-stommel_bifurcation_analytical.png
 
-echo "Doing merging : regime diagrams"
-convert \( figures/figure-ZATOM_bifurcation_phase.png \) \
-    \( figures/figure-stommel_bifurcation_phase.png \) -gravity North +append \
-     figures/merged-regime_diagrams.png
+#echo "Doing merging : regime diagrams"
+#convert \( figures/figure-ZATOM_bifurcation_phase.png \) \
+#    \( figures/figure-stommel_bifurcation_phase.png \) -gravity North +append \
+#     figures/merged-regime_diagrams.png
 
 
 
@@ -36,8 +36,8 @@ name_pairs=(
     ZATOM_bifur_gamma_xi.png                      fig06.png
     figure-reduced_stommel.png                    fig07.png
     merged-stommel_bifurcation_analytical.png     fig08.png
-    merged-regime_diagrams.png                    fig09.png
-    figure-ZATOM_bifurcation_phase_HS.png         fig10.png
+    figure-stommel_bifurcation_phase.png          fig09.png
+    regime_diagrams_comparison.png                fig10.png
 )
 #    ZATOM_bifur_analysis_MLT_S.png                fig10.png
 #    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png

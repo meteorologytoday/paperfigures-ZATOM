@@ -11,12 +11,14 @@ plot_codes=(
     $jl $srcdir/plot_stommel_bifurcation_analytical_p.jl
     $jl $srcdir/plot_stommel_bifurcation_analytical_xi.jl
     $jl $srcdir/plot_stommel_bifurcation_phase.jl
+    $jl $srcdir/plot_regime_diagrams_comparison.jl
     $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
     $bs $srcdir/plot_ZATOM_bifurcation_MLT_S.sh
-    $jl $srcdir/plot_ZATOM_bifurcation_phase.jl
     $py $srcdir/plot_ZATOM_bifurcation_gamma_xi.py
-    $jl $srcdir/plot_ZATOM_bifurcation_phase_HS.jl
 )
+
+#$jl $srcdir/plot_ZATOM_bifurcation_phase.jl
+#$jl $srcdir/plot_ZATOM_bifurcation_phase_HS.jl
 
 # Some code to download data and extract them
 

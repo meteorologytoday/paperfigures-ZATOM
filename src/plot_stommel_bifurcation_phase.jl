@@ -129,7 +129,7 @@ ax.annotate("\$ \\xi = \\frac{\\mu}{\\nu \\left( \\mu + 1 \\right)} \$", xy=(1.2
 )
 
 
-ax.set_title("(b)")
+#ax.set_title("(b)")
 
 ax.legend()
 
