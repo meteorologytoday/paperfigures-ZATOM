@@ -27,10 +27,18 @@ convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
 #    \( figures/figure-stommel_bifurcation_phase.png \) -gravity North +append \
 #     figures/merged-regime_diagrams.png
 
+echo "Doing merging : freshwater forcing and cartoon"
+convert \( figures/figure-forcing.png \) \
+    \( figures/cartoon_ZATOM_forcing.png -resize 80% \) -gravity center +append \
+     figures/merged-forcing.png
 
+
+cp manual_figures/* figures/
 
 name_pairs=(
-    figure-forcing.png                            fig02.png
+    ZATOM_design.png                              fig01.png 
+    merged-forcing.png                            fig02.png
+    MOC_dynaimcs.png                              fig03.png
     ZATOM_bifur_analysis_xi.png                   fig04.png
     ZATOM_bifur_analysis_xi_marks.png             fig05.png
     ZATOM_bifur_gamma_xi.png                      fig06.png
@@ -38,6 +46,7 @@ name_pairs=(
     merged-stommel_bifurcation_analytical.png     fig08.png
     figure-stommel_bifurcation_phase.png          fig09.png
     regime_diagrams_comparison.png                fig10.png
+    cartoon_dijwei2013_forcing.png                fig11.png
 )
 #    ZATOM_bifur_analysis_MLT_S.png                fig10.png
 #    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png
