@@ -122,8 +122,16 @@ ax.text(1.5, ξ_lower_bound + 0.2, "\$\\xi = - \\frac{\\mu  \\left( \\mu - 1 \\r
 ax.plot([p_lower_bound, p_lower_bound], ax.get_ylim(), ls="dashed", color="#aaaaaa")
 ax.text(p_lower_bound + 0.1, 1.8, "\$ p = \\frac{1}{\\mu} \$", ha="left", va="center", rotation=0, color="#555555")
 
+
 ax.annotate("\$ \\xi = \\frac{\\mu}{\\nu \\left( \\mu + 1 \\right)} \$", xy=(1.2, ξ_critical),  xycoords="data",
             xytext=(0.5, ξ_critical), textcoords="data",
+            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
+            horizontalalignment="center", verticalalignment="center", fontsize=13,
+)
+
+ax.scatter(p_lower_bound, ξ_lower_bound, s=20, color="black", zorder=99)
+ax.annotate("\$ P \$", xy=(p_lower_bound, ξ_lower_bound),  xycoords="data",
+            xytext=(p_lower_bound + 0.5, ξ_lower_bound), textcoords="data",
             arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
             horizontalalignment="center", verticalalignment="center", fontsize=13,
 )

@@ -80,8 +80,15 @@ t_R = 10 * 86400.0
 
 shifted_ξ = parse(Float64, ARGS[1])
 shifted_γ = parse(Float64, ARGS[2])
-ξ_corner = -1.5   + shifted_ξ
-γ_corner = (0.05 + shifted_γ) * 1e6
+
+P = (0.05, -1.5)
+P_adjusted = ( P[1] + shifted_γ, P[2] + shifted_ξ)
+
+γ_corner = P_adjusted[1] * 1e6
+ξ_corner = P_adjusted[2]
+
+
+
 
 if ARGS[3] == "plot_shifted"
     plot_shifted = true
@@ -405,7 +412,8 @@ for (k, key) in enumerate(plot_cases)
     #ax.text(regime["label_pos"]..., regime["label"], size=12, ha="center", va="center", color=ecs[k])
 end
 
-
+ax.scatter(P_adjusted..., s=20, color="black", zorder=99)
+ax.text(P_adjusted[1] + 0.01, P_adjusted[2], "\$P\$", va="center", ha="center", size=15)
 
 #ax.plot(ax.get_xlim(), [ξ_upper_bound, ξ_upper_bound], ls="dashed", color="#aaaaaa")
 #ax.plot(ax.get_xlim(), [ξ_lower_bound, ξ_lower_bound], ls="dashed", color="#aaaaaa")
