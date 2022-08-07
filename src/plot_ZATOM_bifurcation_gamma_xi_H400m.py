@@ -40,8 +40,8 @@ varying_axis = {"gamma" : "xi", "xi" : "gamma"}
 
 param_map = {"gamma": "Q", "xi" : "xi"}
 param_rng = {
-    "Q"     : [-0.01, 5.0],
-    "xi"    : [-5, 5],
+    "Q"     : [-0.01, 2.0],
+    "xi"    : [-2, 2],
 }
 
 detailed = False
@@ -50,13 +50,15 @@ if detailed == True:
     # The following is used to measure the bifurcation regime.
     selected_data = {
         'gamma'    : np.array([5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200], dtype=float) / 1000,  # Sv
-        'xi'       : np.array([-1.50, -1.25, -1.00, -0.75, -0.50, 0, 0.5], dtype=float),
+        'xi'       : np.array([-1.50, -1.00, -0.50, 0, 0.50], dtype=float),
     }
 else: 
     # The following is used to output figure in the paper
     selected_data = {
-        'gamma'    : list(np.array([300 + 5 * i for i in range(20)], dtype=float) / 1000),  # Sv
-        'xi'       : list(np.array([-1.50, -1.25, -1.00, -0.75, -0.50, 0, 0.5], dtype=float)),
+        #'gamma'    : list(np.array([0, 100, 200, 300, 400, 500], dtype=float) / 1000),  # Sv
+        'gamma'    : list(np.array([750 + i*25 for i in range(11)], dtype=float) / 1000),  # Sv
+        #'xi'       : list(np.array([-1.50, -1.00, -0.9, -0.8, -0.7, -0.6, -0.50, 0, 0.50], dtype=float)),
+        'xi'       : list(np.linspace(-0.5, 0.5, 11)),
     }
 
 
@@ -64,7 +66,7 @@ else:
 for k, v in selected_data.items():
     selected_data[k] = selected_data[k][::-1]
 
-residue_threshold = 1.0#3e-13
+residue_threshold = 3e-13
 
 folders = {}
 
@@ -77,9 +79,9 @@ for axis, pts in selected_data.items():
 
 
         if axis == "xi":
-            folders[axis].append("data/continuation_data_fixed_xi_072522/batch_std20/output_redo_balanced_tanh/CM_xi%08d_pos/lb8" % (round(pt * 100), ))
+            folders[axis].append("data/continuation_data_H295m_073122/batch_H295m_fixed_xi/output_redo_balanced_tanh/CM_xi%08d_pos/lb8" % (round(pt * 100), ))
         elif axis == "gamma":
-            folders[axis].append("data/continuation_data_fixed_gamma_072522/batch_std20/output_redo_balanced_tanh/CM_gamma%08d_neg/lb8" % (round(pt * 1000), ))
+            folders[axis].append("data/continuation_data_H295m_073122/batch_H295m_fixed_gamma/output_redo_balanced_tanh/CM_gamma%08d_neg/lb8" % (round(pt * 1000), ))
     
 
 
@@ -106,6 +108,8 @@ for axis in ["gamma", "xi"]:
 
         print("Loading the folder: %s" % (folder,))
 
+        #_data, _coor = lsd.loadScanData(folder, actual_loaded_varnames, load_coor=(coor is None))
+
         try:
             _data, _coor = lsd.loadScanData(folder, actual_loaded_varnames, load_coor=(coor is None))
         except Exception as e:
@@ -122,7 +126,6 @@ for axis in ["gamma", "xi"]:
 
         data[axis].append(_data)
 
-
 for axis in ["gamma", "xi"]:
     data_to_delete[axis].reverse() # important. delete from last to first to avoid reordering
 
@@ -132,6 +135,7 @@ for axis in ["gamma", "xi"]:
         del folders[axis][rm_idx]
         del data[axis][rm_idx]
         del selected_data[axis][rm_idx]
+
 
 for axis in ["gamma", "xi"]:
     for d in data[axis]:
@@ -242,8 +246,8 @@ for axis in ["xi", "gamma"]:
     _ax.set_xlabel(["$\\gamma$ [Sv]",  "$\\xi$" ][axis_i])
 
     _ax.set_ylabel("$\\left\\langle\\psi\\right\\rangle$ [Sv]")
-#    _ax.set_xlim([[0.0, 0.2], [-1.8, 0.6]][axis_i])
-#    _ax.set_ylim([2, 6.0])
+    _ax.set_xlim([[0.0, 1.0], [-1.8, 0.6]][axis_i])
+    _ax.set_ylim([-1, 6.0])
 
     _ax.legend(loc="upper left", fontsize=12, handlelength=1.0)
 

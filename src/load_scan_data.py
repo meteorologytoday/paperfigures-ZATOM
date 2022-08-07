@@ -20,6 +20,8 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
     data_by_file = []
     coor = {} if load_coor else None
 
+    load_anything = False
+
     for (j, filename) in enumerate(filenames):
         m = re.search(r'^(?P<num>[0-9]{4}).nc$', filename)
         if m is not None:
@@ -28,6 +30,7 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
             if num == 0:
                 print("Skip %s" % filename)
                 continue
+
 
             valid_filenames.append(filename)
 
@@ -45,6 +48,11 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
                     #print("Shape of variable %s : " % (varname,), d[varname].shape)
 
             data_by_file.append(d)
+            
+            load_anything = True
+
+    if load_anything == False:
+        raise Error("No data is detected.")
 
     # Processing data
     concat_dataset = {}
