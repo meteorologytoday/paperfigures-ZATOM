@@ -54,10 +54,16 @@ if detailed == True:
     }
 else: 
     # The following is used to output figure in the paper
+#    selected_data = {
+#        'gamma'    : list(np.array([300 + 5 * i for i in range(20)], dtype=float) / 1000),  # Sv
+#        'xi'       : list(np.array([-1.50, -1.25, -1.00, -0.75, -0.50, 0, 0.5], dtype=float)),
+#    }
+
     selected_data = {
-        'gamma'    : list(np.array([300 + 5 * i for i in range(20)], dtype=float) / 1000),  # Sv
+        'gamma'    : list(np.array([175, 150, 125, 100, 75, 50, 25, 5], dtype=float) / 1000),  # Sv
         'xi'       : list(np.array([-1.50, -1.25, -1.00, -0.75, -0.50, 0, 0.5], dtype=float)),
     }
+
 
 
 
@@ -242,8 +248,8 @@ for axis in ["xi", "gamma"]:
     _ax.set_xlabel(["$\\gamma$ [Sv]",  "$\\xi$" ][axis_i])
 
     _ax.set_ylabel("$\\left\\langle\\psi\\right\\rangle$ [Sv]")
-#    _ax.set_xlim([[0.0, 0.2], [-1.8, 0.6]][axis_i])
-#    _ax.set_ylim([2, 6.0])
+    _ax.set_xlim([[0.0, 0.2], [-1.8, 0.6]][axis_i])
+    _ax.set_ylim([2, 6.0])
 
     _ax.legend(loc="upper left", fontsize=12, handlelength=1.0)
 

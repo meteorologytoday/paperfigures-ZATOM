@@ -11,14 +11,10 @@ plot_codes=(
     $jl $srcdir/plot_stommel_bifurcation_analytical_p.jl
     $jl $srcdir/plot_stommel_bifurcation_analytical_xi.jl
     $jl $srcdir/plot_stommel_bifurcation_phase.jl
-    $jl $srcdir/plot_regime_diagrams_comparison.jl
+    $bs $srcdir/plot_regimes.sh
     $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
     $bs $srcdir/plot_ZATOM_bifurcation_MLT_S.sh
     $py $srcdir/plot_ZATOM_bifurcation_gamma_xi.py
-)
-
-plot_codes=(
-    $bs $srcdir/plot_regimes.sh
 )
 
 #$jl $srcdir/plot_ZATOM_bifurcation_phase.jl

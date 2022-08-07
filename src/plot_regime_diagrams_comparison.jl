@@ -382,7 +382,7 @@ for (k, key) in enumerate(plot_cases)
     # creating polygons
     poly_ξ = createPoly("vertical",   fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3])
     poly_γ = createPoly("horizontal", fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3])
-    merged_poly = shp_ops.cascaded_union([poly_ξ, poly_γ])
+    merged_poly = shp_ops.unary_union([poly_ξ, poly_γ])
     merged_poly = shpPoly2MatplotPoly(merged_poly, Dict(
         :ec     => ecs[k],
         :fc     => fcs[k],
@@ -414,6 +414,6 @@ end
 #ax.set_title("(b)")
 ax.legend(loc="lower right")
 
-fig.savefig(format("figures/regime_diagrams_comparison_xi_{:.2f}_gamma_{:.2f}.png", ξ_corner, γ_corner), dpi=300)
+fig.savefig(format("figures/regime_diagrams_comparison_xi_{:.2f}_gamma_{:.2f}.png", shifted_ξ, shifted_γ), dpi=300)
 
 plt.show()
