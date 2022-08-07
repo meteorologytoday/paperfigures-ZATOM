@@ -20,13 +20,18 @@ mutable struct ETBDims
 
     factors :: Any
 
-    function ETBDims(t_d, t_R, V, δT_star, G, ξ_corner, γ_corner)
+    function ETBDims(t_d, t_R, V, δT_star, G, C1)
 
         factor_γ2p = (2 * (1 + G) * α_S * t_d * S0) / (α_T * δT_star * V)
         factor_p2γ = factor_γ2p^(-1)
         factor_p2γSv = factor_p2γ / 1e6
-        μ = 1 / (γ_corner * factor_γ2p)
-        ν = - μ * (μ - 1) / ξ_corner
+
+        
+
+        μ = C1[2] * t_d / V
+        ν = 1 / C1[1] * (μ / (1 + μ)) 
+        #μ = 1 / (γ_corner * factor_γ2p)
+        #ν = - μ * (μ - 1) / ξ_corner
 
         println("t_d = $(t_d / 86400/365) yr.")
         println("factor_γ2p = $factor_γ2p")
@@ -78,16 +83,10 @@ t_a = V / t_d
 #t_d = 86400 * 365 * 1e3
 t_R = 10 * 86400.0
 
-shifted_ξ = parse(Float64, ARGS[1])
-shifted_γ = parse(Float64, ARGS[2])
-ξ_corner = -1.5   + shifted_ξ
-γ_corner = (0.05 + shifted_γ) * 1e6
+ξ_corner = -1.5
+γ_corner = 0.05e6 # Sv
 
-if ARGS[3] == "plot_shifted"
-    plot_shifted = true
-else
-    plot_shifted = false
-end
+C1 = (-0.75, 4e6)  # (ξ, Ψ) = ( μ / ((1+μ)ν) , μ )
 
 println("L = $L")
 println("t_d = $t_d")
@@ -101,10 +100,8 @@ etb_dims = Dict(
         V,
         δT_star,
         G,
-        ξ_corner,
-        γ_corner,
+        C1,
     ),
-
 
     "etb_short_t_d" => ETBDims(
         1 * 86400 * 365.0,
@@ -112,8 +109,7 @@ etb_dims = Dict(
         V,
         δT_star,
         G,
-        ξ_corner,
-        γ_corner,
+        C1,
     ),
 
     "etb_longer_t_d" => ETBDims(
@@ -122,8 +118,7 @@ etb_dims = Dict(
         V,
         δT_star,
         G,
-        ξ_corner,
-        γ_corner,
+        C1,
     ),
 
 )
@@ -253,18 +248,18 @@ end
 
 
 regimes["etb_zatom"] = Dict(
-        "label"     => "ETBM \$t_d=35\\mathrm{yr}\$",
+        "label"     => "ETBM\n\$t_d=35\\mathrm{yr}\$",
         "label_pos" => (0.134, -0.4),
 )
 
 regimes["etb_short_t_d"] = Dict(
-        "label"     => "ETBM \$t_d=1\\mathrm{yr}\$",
+        "label"     => "ETBM\n\$t_d=1\\mathrm{yr}\$",
         "label_pos" => (0.16, -0.6),
 )
 
 
 regimes["etb_longer_t_d"] = Dict(
-        "label"     => "ETBM \$t_d=350\\mathrm{yr}\$",
+        "label"     => "ETBM\n\$t_d=350\\mathrm{yr}\$",
         "label_pos" => (0.12, -0.1),
 )
 
@@ -298,12 +293,6 @@ end
 regimes["standard"]["label_pos"] = (0.11, -1.1)
 regimes["standard"]["label"] = "ZATOM"
 
-regimes["standard_adjusted"] = deepcopy(regimes["standard"])
-regimes["standard_adjusted"]["label"] = "ZATOM adjusted"
-regimes["standard_adjusted"]["fixed_ξ"][:, 1]     .+= shifted_ξ
-regimes["standard_adjusted"]["fixed_ξ"][:, 2:3]   .+= shifted_γ
-regimes["standard_adjusted"]["fixed_γ"][:, 1]     .+= shifted_γ
-regimes["standard_adjusted"]["fixed_γ"][:, 2:3]   .+= shifted_ξ
 
 # Creating polygons
 function createPoly(ax_direction, ax_vals, l_bnds, u_bnds)
@@ -343,18 +332,10 @@ using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["etb_longer_t_d", "etb_zatom", "etb_short_t_d", "standard"]
-fcs = [ "none", "none", "none", "none"][end:-1:1]
-ecs = [ "blue", "red", "orange", "green" ][end:-1:1]
-hatches = [ "..", "//", "//", "//" ][end:-1:1]
-
-if plot_shifted
-    push!(fcs, "none")
-    push!(ecs, "#aaaaaa")
-    push!(hatches, "..")
-    push!(plot_cases, "standard_adjusted")
-end
-
+#fcs = [ "dodgerblue", "orangered", "green"]
+fcs = [ "none", "none", "none", "none"]
+ecs = [ "blue", "red", "gray", "green" ]
+hatches = [ "..", "//", "//", "//" ]
 
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
@@ -367,8 +348,7 @@ ax.set_xlim([0.04, 0.2])
 #ax.fill_betweenx(ξs, γ_left_bnd, γ_right_bnd, facecolor="blue", edgecolor="blue",       hatch="..", alpha=0.8, linewidth=1, zorder=10)#, label="Folding along fixed \$\\xi\$")
 #ax.fill_between(ps * factor_p2γSv, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.8, linewidth=1, zorder=10)#, label="Folding along fixed \$p\$")
 
-#for (k, key) in enumerate(["standard", "etb_short_t_d", "etb_zatom", "etb_longer_t_d"])
-for (k, key) in enumerate(plot_cases)
+for (k, key) in enumerate(["standard", "etb_zatom", "etb_longer_t_d", "etb_short_t_d"])
 
     println("Plotting regime = $key")
 
@@ -389,7 +369,6 @@ for (k, key) in enumerate(plot_cases)
         :alpha  => 1.0,
         :zorder => 20,
         :hatch  => hatches[k],
-        :label  => regime["label"],
     ))
 
 
@@ -398,11 +377,7 @@ for (k, key) in enumerate(plot_cases)
 
     ax.add_patch(merged_poly)
 
-    if length(ARGS) >= 4
-        ax.set_title(ARGS[4])
-    end
-
-    #ax.text(regime["label_pos"]..., regime["label"], size=12, ha="center", va="center", color=ecs[k])
+    ax.text(regime["label_pos"]..., regime["label"], size=12, ha="center", va="center", color=ecs[k])
 end
 
 
@@ -412,8 +387,8 @@ end
 #ax.plot([γ_lower_bound, γ_lower_bound], ax.get_ylim(), ls="dashed", color="#aaaaaa")
 
 #ax.set_title("(b)")
-ax.legend(loc="lower right")
+#ax.legend()
 
-fig.savefig(format("figures/regime_diagrams_comparison_xi_{:.2f}_gamma_{:.2f}.png", ξ_corner, γ_corner), dpi=300)
+fig.savefig("figures/regime_diagrams_comparison.png", dpi=300)
 
 plt.show()

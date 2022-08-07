@@ -17,6 +17,10 @@ plot_codes=(
     $py $srcdir/plot_ZATOM_bifurcation_gamma_xi.py
 )
 
+plot_codes=(
+    $bs $srcdir/plot_regimes.sh
+)
+
 #$jl $srcdir/plot_ZATOM_bifurcation_phase.jl
 #$jl $srcdir/plot_ZATOM_bifurcation_phase_HS.jl
 

@@ -24,6 +24,14 @@ convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
     \( figures/figure-stommel_bifurcation_analytical_xi.png \) -gravity North +append \
      figures/merged-stommel_bifurcation_analytical.png
 
+
+echo "Doing merging : regime diagrams"
+convert \( figures/regime_diagrams_comparison_xi_-1.50_gamma_50000.00.png \) \
+    \( figures/regime_diagrams_comparison_xi_-1.00_gamma_50000.00.png \) -gravity North +append \
+    \( figures/regime_diagrams_comparison_xi_-1.50_gamma_80000.00.png \) -gravity North +append \
+     figures/regime_diagrams_comparison.png
+
+
 #echo "Doing merging : regime diagrams"
 #convert \( figures/figure-ZATOM_bifurcation_phase.png \) \
 #    \( figures/figure-stommel_bifurcation_phase.png \) -gravity North +append \
