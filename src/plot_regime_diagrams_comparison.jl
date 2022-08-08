@@ -28,11 +28,14 @@ mutable struct ETBDims
         μ = 1 / (γ_corner * factor_γ2p)
         ν = - μ * (μ - 1) / ξ_corner
 
+        println("V = $(V/1e15) * 1e15 m^3")
         println("t_d = $(t_d / 86400/365) yr.")
         println("factor_γ2p = $factor_γ2p")
         println("μ = $μ")
         println("ν = $ν")
 
+        ψ0 = μ * V / t_d
+        println("ψ0 = $(ψ0 / 1e6) Sv")
 
         return new(
 
@@ -61,7 +64,7 @@ H = 4500.0
 a = 6.4e6
 α_T = 2e-3
 α_S = 7e-3
-V   = π * H / 9 * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2
+V   = π * H / 9 * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2 
 A_w =  5.0
 A_e = 15.0
 
@@ -113,20 +116,20 @@ etb_dims = Dict(
     ),
 
 
-    "etb_short_t_d" => ETBDims(
-        1 * 86400 * 365.0,
+    "etb_halfV" => ETBDims(
+        t_d,
         t_R,
-        V,
+        V / 2,
         δT_star,
         G,
         ξ_corner,
         γ_corner,
     ),
 
-    "etb_longer_t_d" => ETBDims(
-        350 * 86400 * 365.0,
+    "etb_tenthV" => ETBDims(
+        t_d,
         t_R,
-        V,
+        V / 10,
         δT_star,
         G,
         ξ_corner,
@@ -260,18 +263,18 @@ end
 
 
 regimes["etb_zatom"] = Dict(
-        "label"     => "ETBM \$t_d=35\\mathrm{yr}\$",
+        "label"     => "ETBM with \$100\\%\$ V",
         "label_pos" => (0.134, -0.4),
 )
 
-regimes["etb_short_t_d"] = Dict(
-        "label"     => "ETBM \$t_d=1\\mathrm{yr}\$",
+regimes["etb_halfV"] = Dict(
+        "label"     => "ETBM with \$50\\%\$ V",
         "label_pos" => (0.16, -0.6),
 )
 
 
-regimes["etb_longer_t_d"] = Dict(
-        "label"     => "ETBM \$t_d=350\\mathrm{yr}\$",
+regimes["etb_tenthV"] = Dict(
+        "label"     => "ETBM with \$10\\%\$ V",
         "label_pos" => (0.12, -0.1),
 )
 
@@ -350,9 +353,9 @@ using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["etb_longer_t_d", "etb_zatom", "etb_short_t_d", "standard"]
+plot_cases = ["etb_tenthV", "etb_zatom", "standard"]
 fcs = [ "none", "none", "none", "none"][end:-1:1]
-ecs = [ "blue", "red", "orange", "green" ][end:-1:1]
+ecs = [ "blue", "red", "green" ][end:-1:1]
 hatches = [ "..", "//", "//", "//" ][end:-1:1]
 
 if plot_shifted
@@ -374,7 +377,7 @@ ax.set_xlim([0.04, 0.2])
 #ax.fill_betweenx(ξs, γ_left_bnd, γ_right_bnd, facecolor="blue", edgecolor="blue",       hatch="..", alpha=0.8, linewidth=1, zorder=10)#, label="Folding along fixed \$\\xi\$")
 #ax.fill_between(ps * factor_p2γSv, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.8, linewidth=1, zorder=10)#, label="Folding along fixed \$p\$")
 
-#for (k, key) in enumerate(["standard", "etb_short_t_d", "etb_zatom", "etb_longer_t_d"])
+#for (k, key) in enumerate(["standard", "etb_halfV", "etb_zatom", "etb_tenthV"])
 for (k, key) in enumerate(plot_cases)
 
     println("Plotting regime = $key")
