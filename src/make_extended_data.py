@@ -19,6 +19,8 @@ def makeExtendedData(data, coor):
     psi_T = (data["Psib"][:, :, :-1] + data["Psib"][:, :, 1:]) / 2
     psi_T = (psi_T[:, :-1, :] + psi_T[:, 1:, :]) / 2
 
+    z500_ind = np.argmin(np.abs(coor["z_T"] - 500.0))
+    z1500_ind = np.argmin(np.abs(coor["z_T"] - 1500.0))
     z1000_ind = np.argmin(np.abs(coor["z_T"] - 1000.0))
     y40_ind = np.argmin(np.abs(coor["y_T"] - 40.0))
     Lw = coor["dx_T"][0, 0]
@@ -87,7 +89,19 @@ def makeExtendedData(data, coor):
     data["d_cvt"] = cvt_w - cvt_e
     data["chi_dbdz"] = data["chi1000"] * data["s1000"]  
 
+    if ("qe" in data) and ("qw" in data):
+        print("Compute dq")
+        qw_1000 = np.average( data["qw"][:, :, :, z500_ind:z1000_ind], weights=coor["dz_T"][z500_ind:z1000_ind], axis=3)
+        qw_1000 = np.average(qw_1000, weights=coor["cos_lat"], axis=2) 
+ 
+        qe_1000 = np.average( data["qe"][:, :, :, z500_ind:z1000_ind], weights=coor["dz_T"][z500_ind:z1000_ind], axis=3)
+        qe_1000 = np.average(qe_1000, weights=coor["cos_lat"], axis=2) 
+        
+        # Convert into buoyancy
+        qw_b_1000 = 10 * (qw_1000[:, 0] * 2e-4 - qw_1000[:, 1] * 7e-4) 
+        qe_b_1000 = 10 * (qe_1000[:, 0] * 2e-4 - qe_1000[:, 1] * 7e-4) 
 
+        data["dq"] = qe_b_1000 - qw_b_1000
 
 # Compute the deep water formation grids
 def computeDeepWaterFormationGrids(b):

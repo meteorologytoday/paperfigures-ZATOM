@@ -27,7 +27,7 @@ convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
 
 echo "Doing merging : regime diagrams"
 convert \( figures/regime_diagrams_comparison_xi_0.00_gamma_0.00.png \) \
-    \( figures/regime_diagrams_comparison_xi_0.50_gamma_0.00.png \) -gravity North +append \
+    \( figures/regime_diagrams_comparison_xi_0.65_gamma_0.00.png \) -gravity North +append \
      figures/regime_diagrams_comparison.png
 
 

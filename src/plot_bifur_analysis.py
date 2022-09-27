@@ -70,7 +70,8 @@ repNaN2None(args.cvt_e_rng)
 data = []
 coor = {}
 
-target_vars = ["psi1000", "db_ew", "s1000_hlat", "chi1000", "d_cvt", "chi_dbdz"] #"cvt_e", "cvt_w"]
+#target_vars = ["psi1000", "db_ew", "s1000", "chi1000", "d_cvt", "chi_dbdz"] #"cvt_e", "cvt_w"]
+target_vars = ["psi1000", "db_ew", "s1000", "chi1000", "dq", "chi_dbdz"]
 
 folders = args.folder
 legends   = args.legend
@@ -101,7 +102,7 @@ elif args.param == "xi":
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Psib", "chi", param, "be", "bw", "res", "stable"]
+loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable"]
 for i, folder in enumerate(folders):
 
     print("Loading the folder: %s" % (folder,))
@@ -150,7 +151,7 @@ for d in data:
     z_ind = np.argmin(np.abs(coor["z_W"] - 1000.0))
 
     print("z_ind = %d, y_ind = %d" % (z_ind, y_ind)) 
-    d["psi_fixed"] = d["Psib"][:, y_ind, z_ind] 
+    #d["psi_fixed"] = d["Psib"][:, y_ind, z_ind] 
 
 # remove data points that is not converging
 for d in data:
@@ -175,7 +176,7 @@ for k in range(nmarkpairs):
     print("Search for the marker case closest to : (%s, psi) = (%f, %f)" % (param, args.marks[k*2], args.marks[k*2+1]))
     for i, d in enumerate(data):
         for s in range(len(d[param])):
-            _dist = dist(d[param][s]*10, d["psi_fixed"][s], args.marks[k*2]*10, args.marks[k*2+1])
+            _dist = dist(d[param][s]*10, d["psi1000"][s], args.marks[k*2]*10, args.marks[k*2+1])
             if _dist < shortest_dist[k]:
                 shortest_dist[k] = _dist
                 mark_index[k, 0] = i
@@ -284,6 +285,7 @@ labels = {
     "cvt_e"  : r"$\tilde{q}_e$",
     "cvt_w"  : r"$\tilde{q}_w$",
     "d_cvt"  : r"$\Delta \tilde{q}$",
+    "dq"     : r"$\left\langle \Delta \tilde{q} \right\rangle$",
     "chi_dbdz"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
 }
 
@@ -298,6 +300,7 @@ units = {
     "cvt_e"       : r"",
     "cvt_w"       : r"",
     "d_cvt"       : r"",
+    "dq"          : r"",
     "chi_dbdz"    : r"",
 }
 
@@ -308,9 +311,9 @@ for l, var in enumerate(target_vars):
     if hasattr(args, ylim_attr):
         ax_flat[l].set_ylim(getattr(args, ylim_attr))
 
-    if param == "gamma":
+    if args.param == "gamma":
         ax_flat[l].set_xlabel("$\\gamma$ [Sv]")
-    elif param == "xi":
+    elif args.param == "xi":
         ax_flat[l].set_xlabel("$\\xi$")
 
 

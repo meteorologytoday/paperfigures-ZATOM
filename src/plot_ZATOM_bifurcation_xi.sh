@@ -51,10 +51,9 @@ python3 src/plot_bifur_analysis.py --folder \
     --cvt_w-rng -0.01 0.2    \
     --offset-marks 0.01 \
     --output-bifur "figures/ZATOM_bifur_analysis_xi.png" \
-    --marks 0.0         2.09   \
-            0.1146      3.685  \
-            0.1146     -0.751  \
-            0.1146      0.801  \
-            0.1146     -0.586  \
+    --marks 0.0         3.89   \
+            0.1145      5.10  \
+            0.1145      3.18  \
+            0.1145      2.46  \
     --output-marks "figures/ZATOM_bifur_analysis_xi_marks.png" \
     --residue-threshold 3e-10 
