@@ -410,13 +410,8 @@ fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
 ax.set_xlabel("\$\\gamma\$ [Sv]", fontsize=25)
 ax.set_ylabel("\$\\xi\$", fontsize=25)
-<<<<<<< HEAD
 ax.grid(alpha=0.5)
 ax.set_ylim([-1.6, 0.1])
-=======
-ax.grid()
-ax.set_ylim([-1.6, -0.4])
->>>>>>> ac38454... fix range
 ax.set_xlim([0.04, 0.2])
 
 #ax.fill_betweenx(ξs, γ_left_bnd, γ_right_bnd, facecolor="blue", edgecolor="blue",       hatch="..", alpha=0.7, linewidth=1, zorder=10)#, label="Folding along fixed \$\\xi\$")
