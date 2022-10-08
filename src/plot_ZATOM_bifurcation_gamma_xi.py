@@ -89,8 +89,6 @@ for axis, pts in selected_data.items():
     
 
 
-#target_vars = ["psi1000", "db_ew", "s1000_hlat", "chi1000", "d_cvt", "chi_dbdz"] #"cvt_e", "cvt_w"]
-
 # Data contains a list of folders (cases)
 # and each case has multiple data files
 data_to_delete = {}
@@ -143,14 +141,16 @@ for axis in ["gamma", "xi"]:
     for d in data[axis]:
         if "Q" in d:
             d["Q"] /= 1e6
-    
-        d["chi1000"] /= 1e6 * 1e-6
-        d["psi1000"] /= 1e6 
+
+        d["mode1_chi"] /= (1e6 * 1e-6)  # per Sv  and per 1000 km
+        d["mode1_psi"] /= 1e6 
         d["Psib"] /= 1e6
-        d["db_ns"] *= 1e3
-        d["db_ew"] *= 1e3
-        d["s1000"] *= 1e5
-        d["s1000_hlat"] *= 1e5
+        #d["db_ns"] *= 1e3
+        d["mode1_db_ew"] *= 1e3
+        d["mode1_s"] *= 1e7
+        d["mode1_chi_dbdz"] *= 1e7
+        d["mode1_chi_dbdz_product"] *= 1e7
+        #d["mode1_dq"] *= 1e12
 
 # remove data points that is not converging
 
@@ -163,7 +163,7 @@ for axis in ["gamma", "xi"]:
         d[param][nan_idx] = np.nan
         d[param][d[param] < param_rng[param][0]] = np.nan
         d[param][d[param] > param_rng[param][1]] = np.nan
-        for v in ["psi1000"]:
+        for v in ["mode1_psi"]:
             d[v][nan_idx] = np.nan
      
 
@@ -225,7 +225,7 @@ for axis in ["xi", "gamma"]:
             res = d["res"][rng]
 
 
-            for k, var in enumerate(["psi1000",]):
+            for k, var in enumerate(["mode1_psi",]):
         
                 y   = d[var][rng]
 
@@ -249,7 +249,7 @@ for axis in ["xi", "gamma"]:
 
     _ax.set_ylabel("$\\left\\langle\\psi\\right\\rangle$ [Sv]")
     _ax.set_xlim([[0.0, 0.2], [-1.8, 0.6]][axis_i])
-    _ax.set_ylim([2, 6.0])
+    _ax.set_ylim([0.5, 5.5])
 
     _ax.legend(loc="upper left", fontsize=12, handlelength=1.0)
 
