@@ -25,16 +25,11 @@ convert \( figures/figure-etb_bifur_p.png \) \
      figures/merged-stommel_bifurcation_analytical.png
 
 
-echo "Doing merging : regime diagrams"
-convert \( figures/regime_diagrams_comparison_xi_0.00_gamma_0.00.png \) \
-    \( figures/regime_diagrams_comparison_xi_0.65_gamma_0.00.png \) -gravity North +append \
-     figures/regime_diagrams_comparison.png
-
-
 #echo "Doing merging : regime diagrams"
-#convert \( figures/figure-ZATOM_bifurcation_phase.png \) \
-#    \( figures/figure-stommel_bifurcation_phase.png \) -gravity North +append \
-#     figures/merged-regime_diagrams.png
+#convert \( figures/regime_diagrams_comparison_xi_0.00_gamma_0.00.png \) \
+#    \( figures/regime_diagrams_comparison_xi_0.65_gamma_0.00.png \) -gravity North +append \
+#     figures/regime_diagrams_comparison.png
+
 
 echo "Doing merging : freshwater forcing and cartoon"
 convert \( figures/figure-forcing.png -gravity North -background white -splice 0x200 -pointsize 120 -annotate +0+0 '(a)' \) \
