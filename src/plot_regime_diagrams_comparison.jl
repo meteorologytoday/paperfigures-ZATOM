@@ -11,35 +11,49 @@ include("ZATOM_regimes.jl")
 mutable struct ETBDims
     
     t_d :: Float64
-    t_R :: Float64
+    t_r :: Float64
     V   :: Float64
     δT_star :: Float64
-    G   :: Float64
+
+    p_cusp  :: Float64
+    Δξ_fold :: Float64
+    Δξ_arc  :: Float64
+    ξ0  :: Float64
+
     μ   :: Float64
     ν   :: Float64
+    ϵ   :: Float64
+
 
     factors :: Any
 
-    function ETBDims(t_d, t_R, V, δT_star, G, ξ_corner, γ_corner)
+    function ETBDims(t_d, t_r, V, δT_star, γ_cusp, Δξ_fold, Δξ_arc, ξ0)
 
-        factor_γ2p = (2 * (1 + G) * α_S * t_d * S0) / (α_T * δT_star * V)
+        factor_γ2p = (2 * α_S * t_d * S0) / (α_T * δT_star * V)
         factor_p2γ = factor_γ2p^(-1)
         factor_p2γSv = factor_p2γ / 1e6
-        μ = 1 / (γ_corner * factor_γ2p)
-        ν = - μ * (μ - 1) / ξ_corner
+        
+        p_cusp = γ_cusp * factor_γ2p
+
+        r = Δξ_fold / Δξ_arc
+        μ = ( ( 1 / p_cusp - 1) / r)^0.5
+        ν = μ^2 / Δξ_arc
+        ϵ = Δξ_fold * ν + 1 - μ
+
 
         println("V = $(V/1e15) * 1e15 m^3")
         println("t_d = $(t_d / 86400/365) yr.")
         println("factor_γ2p = $factor_γ2p")
         println("μ = $μ")
         println("ν = $ν")
+        println("ϵ = $ϵ")
 
         ψ0 = μ * V / t_d
         println("ψ0 = $(ψ0 / 1e6) Sv")
 
         return new(
 
-            t_d, t_R, V, δT_star, G, μ, ν,
+            t_d, t_r, V, δT_star, p_cusp, Δξ_fold, Δξ_arc, ξ0, μ, ν, ϵ,
  
             (
                 γ2p   = factor_γ2p,
@@ -55,8 +69,8 @@ mutable struct ETBDims
 end
 
 
-ξs_all = collect(range( -5,  0.5,  length=10001))
-ps_all = collect(range( -0.1, 0.5,  length=10001))
+ξs_all = collect(range( -5,  0.5,  length=1001))
+ps_all = collect(range( -0.1, 5.0,  length=1001))
 
 ϕn = 70.0
 ϕs = 10.0
@@ -64,11 +78,7 @@ H = 4500.0
 a = 6.4e6
 α_T = 2e-3
 α_S = 7e-3
-V   = π * H / 9 * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2 
-A_w =  5.0
-A_e = 15.0
-
-G = 0.5 * (A_w / (2 * A_e) + A_e / (2 * A_w) - 1)
+V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (800/4500) * (5/20)
 
 δT_star = 25.0
 S0 = 35.0
@@ -76,64 +86,39 @@ S0 = 35.0
 L = a * deg2rad(ϕn - ϕs)
 Kh = 4e4
 
-t_d = L^2 / Kh
+t_d = L^2 / Kh 
 t_a = V / t_d 
-#t_d = 86400 * 365 * 1e3
-t_R = 10 * 86400.0
+t_r = 10 * 86400.0
 
-shifted_ξ = parse(Float64, ARGS[1])
-shifted_γ = parse(Float64, ARGS[2])
+Q = t_d / t_r
 
-P = (0.05, -1.5)
-P_adjusted = ( P[1] + shifted_γ, P[2] + shifted_ξ)
+cusp_pt = (γ=0.05e6, ξ=-1.5)
 
-γ_corner = P_adjusted[1] * 1e6
-ξ_corner = P_adjusted[2]
+γ_cusp  = cusp_pt.γ
+Δξ_fold = 0.35
+Δξ_arc  = 0.9
 
+ξ0 = -0.9
 
-
-
-if ARGS[3] == "plot_shifted"
-    plot_shifted = true
-else
-    plot_shifted = false
-end
+γ_corner = cusp_pt[1] * 1e6
+ξ_corner = cusp_pt[2]
 
 println("L = $L")
 println("t_d = $t_d")
 println("V = $V")
 
+
 etb_dims = Dict(
 
     "etb_zatom" => ETBDims(
         t_d,
-        t_R,
+        t_r,
         V,
         δT_star,
-        G,
-        ξ_corner,
-        γ_corner,
-    ),
-
-
-    "etb_halfV" => ETBDims(
-        t_d,
-        t_R,
-        V / 2,
-        δT_star,
-        G,
-        ξ_corner,
-        γ_corner,
-    ),
-
-    "etb_tenthV" => ETBDims(
-        t_d,
-        t_R,
-        V / 10,
-        δT_star,
-        G,
-        ξ_corner,
-        γ_corner,
+        γ_cusp,
+        Δξ_fold,
+        Δξ_arc,
+        ξ0,
     ),
 
 )
@@ -149,35 +134,24 @@ function generate_bnds_p(ξs, ed :: ETBDims)
 
     for (j, ξ) in enumerate(ξs)
 
-        coe = (
-            μ = ed.μ,
-            ν = ed.ν,
-            ξ = ξ,
-        )
+        α = ed.ν * ξ / ed.μ
+        β = ed.ϵ / ed.μ
+        f(ψ) = ( α + β ) * ψ^2 - 2 * (1 - α) * ψ + (ed.μ - 1 + α + ed.μ * β)
+        dfdψ(ψ) = 2 * ( α + β ) * ψ - 2 * (1 - α)
+        p(ψ) = ( 1 + abs(ψ) ) * ( 1 - ψ / ed.μ ) / ( 1 - α  * ( 1 + abs(ψ) ) - ψ * β )
 
-        α = - coe.ν * coe.ξ / coe.μ
-     
-        Δ = (1+α)^2 - α * (1 + α - coe.μ )
-        Δ2 = coe.μ ^2 - coe.μ + coe.ν * ξ
-        
-        f(ψ) = α * ψ^2 + 2 * (1 + α) * ψ + (1 + α - coe.μ)
-        dfdψ(ψ) = 2 * α * ψ + 2 * (1 + α)
-
-        p(ψ) = (1 + abs(ψ)) * (1 - ψ / coe.μ ) / ( 1 - coe.ν * ξ / coe.μ  * ( 1 + abs(ψ)) )
+        Δ = (1 - α)^2 - (α + β) * ( (ed.μ - 1) * (1 - α) + ed.μ * (α + β) )
 
         local ψ_left, ψ_right, p_left, p_right
 
-        if Δ >= 0 && Δ2 > 0
+        if Δ >= 0
 
             ψ_left = 0.0
-            α_tmp = (1 + α) / α
             ψ_right = find_zero((f, dfdψ), 0.0, Roots.Newton()) 
 
             p_left  = p(ψ_left)
             p_right = p(ψ_right)
             
-            #println("ξ = $ξ , α = $α , Δ = $Δ , ψ_right = $ψ_right , p_right = $p_right")
-
             if p_right < p_left
                 println("p_left = $p_left , p_right = $p_right")
                 throw(ErrorException("We have p_left > p_right which is wrong."))
@@ -204,11 +178,11 @@ function generate_bnds_ξ(ps, ed :: ETBDims)
 
     ps = copy(ps)
 
-    ps[(ps .* ed.μ) .< 1] .= NaN
+    ps[ (ps .* ( ed.μ  +  ed.ϵ)) .< 1] .= NaN
 
-    Ψ_c  = ( ps .* ed.μ ).^0.5 .- 1   # Critical Ψ
+    Ψ_c  = ( ps .* (ed.μ + ed.ϵ) ).^0.5 .- 1   # Critical Ψ
 
-    ξ_left_bnd  = ed.μ / ed.ν * ( 1 ./ (1 .+ abs.(Ψ_c)) - (1 .- Ψ_c / ed.μ) ./ ps )
+    ξ_left_bnd  = ed.μ / ed.ν * ( (1 .- ed.ϵ .* Ψ_c ./ ed.μ) ./ (1 .+ abs.(Ψ_c)) - (1 .- Ψ_c / ed.μ) ./ ps )
     ξ_right_bnd = ed.μ / ed.ν .* ( 1 .- 1 ./ ps )
 
     no_solution_idx = ξ_left_bnd .> ξ_right_bnd
@@ -237,17 +211,17 @@ for (k, ed) in etb_dims
     println("Length of ξs = ", length(ξs))
     println("Length of ps = ", length(ps))
     
-    ξ_upper_bound = ed.μ / ed.ν
-    ξ_lower_bound = - ed.μ / ed.ν * ( ed.μ - 1 )
-
-    ξ_critical = ed.μ / ( ed.ν * ( ed.μ + 1 ) )
-
-    p_lower_bound = 1 / ed.μ
-
-    γ_left_bnd = p_left_bnd * ed.factors.p2γSv
+    γ_left_bnd  = p_left_bnd  * ed.factors.p2γSv
     γ_right_bnd = p_right_bnd * ed.factors.p2γSv
-    γ_lower_bound = p_lower_bound * ed.factors.p2γSv
-    γs = ps * ed.factors.p2γSv
+    γs          = ps          * ed.factors.p2γSv
+
+
+    ξ_left_bnd  .+= ed.ξ0
+    ξ_right_bnd .+= ed.ξ0
+    ξs          .+= ed.ξ0
+
+    #println("ξ0 = ", ed.ξ0)
+    #println("ξs + ξ0 = ", ξs .+ ed.ξ0)
 
     data[k] = Dict(
         "ξ_bnds" => (ξ_left_bnd, ξ_right_bnd),
@@ -256,8 +230,8 @@ for (k, ed) in etb_dims
         "ps" => ps,
         "γs" => γs,
         "ξs" => ξs,
-        "γ_lower_bound" => γ_lower_bound,
     )
+
 
 end
 
@@ -267,26 +241,15 @@ regimes["etb_zatom"] = Dict(
         "label_pos" => (0.134, -0.4),
 )
 
-regimes["etb_halfV"] = Dict(
-        "label"     => "ETBM with \$50\\%\$ V",
-        "label_pos" => (0.16, -0.6),
-)
-
-
-regimes["etb_tenthV"] = Dict(
-        "label"     => "ETBM with \$10\\%\$ V",
-        "label_pos" => (0.12, -0.1),
-)
-
 for k in keys(data)
+    
+    println(k)
 
     ξs = data[k]["ξs"]
     γs = data[k]["γs"]
 
     fixed_ξ = zeros(Float64, length(ξs), 3)
     fixed_γ = zeros(Float64, length(γs), 3)
-
-    println(k)
 
     fixed_ξ[:, 1] = ξs
 
@@ -307,13 +270,6 @@ end
 
 regimes["standard"]["label_pos"] = (0.11, -1.1)
 regimes["standard"]["label"] = "ZATOM"
-
-regimes["standard_adjusted"] = deepcopy(regimes["standard"])
-regimes["standard_adjusted"]["label"] = "ZATOM adjusted"
-regimes["standard_adjusted"]["fixed_ξ"][:, 1]     .+= shifted_ξ
-regimes["standard_adjusted"]["fixed_ξ"][:, 2:3]   .+= shifted_γ
-regimes["standard_adjusted"]["fixed_γ"][:, 1]     .+= shifted_γ
-regimes["standard_adjusted"]["fixed_γ"][:, 2:3]   .+= shifted_ξ
 
 # Creating polygons
 function createPoly(ax_direction, ax_vals, l_bnds, u_bnds)
@@ -353,18 +309,10 @@ using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["etb_tenthV", "etb_zatom", "standard"]
+plot_cases = ["etb_zatom", "standard"]
 fcs = [ "none", "none", "none", "none"][end:-1:1]
 ecs = [ "blue", "red", "green" ][end:-1:1]
 hatches = [ "..", "//", "//", "//" ][end:-1:1]
-
-if plot_shifted
-    push!(fcs, "none")
-    push!(ecs, "#aaaaaa")
-    push!(hatches, "..")
-    push!(plot_cases, "standard_adjusted")
-end
-
 
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
@@ -392,7 +340,8 @@ for (k, key) in enumerate(plot_cases)
     # creating polygons
     poly_ξ = createPoly("vertical",   fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3])
     poly_γ = createPoly("horizontal", fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3])
-    merged_poly = shp_ops.unary_union([poly_ξ, poly_γ])
+    #merged_poly = shp_ops.unary_union([poly_ξ, poly_γ])
+    merged_poly = shp_ops.unary_union([poly_γ, poly_ξ])
     merged_poly = shpPoly2MatplotPoly(merged_poly, Dict(
         :ec     => ecs[k],
         :fc     => fcs[k],
@@ -408,23 +357,18 @@ for (k, key) in enumerate(plot_cases)
 
     ax.add_patch(merged_poly)
 
-    if length(ARGS) >= 4
-        ax.set_title(ARGS[4])
-    end
+    #if length(ARGS) >= 4
+    #    ax.set_title(ARGS[4])
+    #end
 
     #ax.text(regime["label_pos"]..., regime["label"], size=12, ha="center", va="center", color=ecs[k])
 end
 
-ax.scatter(P_adjusted..., s=20, color="black", zorder=99)
-ax.text(P_adjusted[1] + 0.01, P_adjusted[2], "\$P\$", va="center", ha="center", size=15)
+#ax.scatter(P_adjusted..., s=20, color="black", zorder=99)
+#ax.text(P_adjusted[1] + 0.01, P_adjusted[2], "\$P\$", va="center", ha="center", size=15)
 
-#ax.plot(ax.get_xlim(), [ξ_upper_bound, ξ_upper_bound], ls="dashed", color="#aaaaaa")
-#ax.plot(ax.get_xlim(), [ξ_lower_bound, ξ_lower_bound], ls="dashed", color="#aaaaaa")
-#ax.plot([γ_lower_bound, γ_lower_bound], ax.get_ylim(), ls="dashed", color="#aaaaaa")
-
-#ax.set_title("(b)")
 ax.legend(loc="lower right")
 
-fig.savefig(format("figures/regime_diagrams_comparison_xi_{:.2f}_gamma_{:.2f}.png", shifted_ξ, shifted_γ), dpi=300)
+fig.savefig(format("figures/regime_diagrams_comparison_xi.png"), dpi=300)
 
 plt.show()

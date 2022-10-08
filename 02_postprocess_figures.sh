@@ -20,8 +20,8 @@ echo "Making final figures... "
 cp manual_figures/* figures/
 
 echo "Doing merging : analytical extended two-box model"
-convert \( figures/figure-stommel_bifurcation_analytical_p.png \) \
-    \( figures/figure-stommel_bifurcation_analytical_xi.png \) -gravity North +append \
+convert \( figures/figure-etb_bifur_p.png \) \
+    \( figures/figure-etb_bifur_xi.png \) -gravity North +append \
      figures/merged-stommel_bifurcation_analytical.png
 
 
