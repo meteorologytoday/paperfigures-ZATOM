@@ -149,6 +149,11 @@ function generate_bnds_p(ξs, ed :: ETBDims)
             ψ_left = 0.0
             ψ_right = find_zero((f, dfdψ), 0.0, Roots.Newton()) 
 
+            if ψ_right < 0  # it is positive definite
+                continue
+            end
+
+
             p_left  = p(ψ_left)
             p_right = p(ψ_right)
             

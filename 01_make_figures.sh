@@ -10,7 +10,7 @@ plot_codes=(
     $jl $srcdir/plot_stommel_dydt.jl
     $jl $srcdir/plot_etb_bifur_p.jl
     $jl $srcdir/plot_etb_bifur_xi.jl
-    $jl $srcdir/plot_stommel_bifurcation_phase.jl
+    $jl $srcdir/plot_etb_bifur_phase.jl
     $bs $srcdir/plot_regimes.sh
     $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
     $bs $srcdir/plot_ZATOM_bifurcation_MLT_S.sh

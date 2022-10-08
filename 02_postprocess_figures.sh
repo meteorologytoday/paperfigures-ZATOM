@@ -52,12 +52,10 @@ name_pairs=(
     cartoon_ETB_forcing.png                       fig07.png
     figure-reduced_stommel.png                    fig08.png
     merged-stommel_bifurcation_analytical.png     fig09.png
-    figure-stommel_bifurcation_phase.png          fig10.png
+    figure-etb_bifur_phase.png                    fig10.png
     regime_diagrams_comparison.png                fig11.png
     cartoon_dijwei2013_forcing.png                fig12.png
 )
-#    ZATOM_bifur_analysis_MLT_S.png                fig10.png
-#    ZATOM_bifur_analysis_MLT_S_marks.png          fig11.png
 
 N=$(( ${#name_pairs[@]} / 2 ))
 echo "We have $N figure(s) to rename."
