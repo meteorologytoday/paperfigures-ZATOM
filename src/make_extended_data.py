@@ -15,52 +15,68 @@ def makeExtendedData(data, coor):
     Ns = data["Psib"].shape[0]
 
     data["bw_bnd"] = data["be"] + 2 * ( data["bw"] - data["be"] )
-    chi_T = (data["chi"][:, :, :-1] + data["chi"][:, :, 1:]) / 2
-    psi_T = (data["Psib"][:, :, :-1] + data["Psib"][:, :, 1:]) / 2
-    psi_T = (psi_T[:, :-1, :] + psi_T[:, 1:, :]) / 2
+    psi_W = (data["Psib"][:, :-1, :] + data["Psib"][:, 1:, :]) / 2
 
-    z500_ind = np.argmin(np.abs(coor["z_T"] - 500.0))
-    z1500_ind = np.argmin(np.abs(coor["z_T"] - 1500.0))
-    z1000_ind = np.argmin(np.abs(coor["z_T"] - 1000.0))
-    y40_ind = np.argmin(np.abs(coor["y_T"] - 40.0))
+    lat_exclude = 40.0
+    lat_exclude_ind = np.argmin(np.abs(coor["y_T"] - lat_exclude))
+
+    print("Remove the cosine weighting between EQ and %.1f. The found index: %d" % (lat_exclude, lat_exclude_ind))
+    coor["cos_lat"][0:lat_exclude_ind] = 0.0
+
     Lw = coor["dx_T"][0, 0]
     Le = coor["dx_T"][1, 0]
 
-    b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
-    data["s1000"] = ( b_mean[:, :, 0] - b_mean[:, :, z1000_ind] ) / ( coor["z_T"][z1000_ind] - coor["z_T"][0] )
-    data["s1000"] = np.average( data["s1000"][:, :], weights=coor["cos_lat"], axis=1)
+    H = np.sum(coor["dz_T"])
+
+    mode_1_dz_weight_T = - (2 / H) * np.sin( coor["z_T"] * np.pi / H) * coor["dz_T"]
+    mode_1_dz_weight_W = - (2 / H) * np.sin( coor["z_W"] * np.pi / H) * coor["dz_W"]
     
-    chi_T_vavg = np.average( chi_T[:, :, :z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
-    data["chi1000"] = np.average( chi_T_vavg[:, :], weights=coor["cos_lat"], axis=1)
+    print("Total depth H = ", H)
+
+    b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
+    s_W = ( b_mean[:, :, :-1] - b_mean[:, :, 1:] ) / ( coor["dz_W"][1:-1][None, None, :] )
+    s_vint = np.sum(s_W * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
+    data["mode1_s"] = np.average( s_vint, weights=coor["cos_lat"], axis=1)
+    
+
+    chi_vint = np.sum(data["chi"] * mode_1_dz_weight_W[None, None, :], axis=2)
+    data["mode1_chi"] = np.average( chi_vint, weights=coor["cos_lat"], axis=1)
+    
+    data["mode1_chi_dbdz_product"] = data["mode1_chi"] * data["mode1_s"]  
+
+    chi_dbdz = s_W * data["chi"][:, :, 1:-1]
+    chi_dbdz_vint = np.sum( chi_dbdz * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
+    data["mode1_chi_dbdz"] = np.average( chi_dbdz_vint[:, :], weights=coor["cos_lat"], axis=1)
+
+
+    
+
  
-    psi_T_vavg = np.average( psi_T[:, :, :z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
-    data["psi1000"] = np.average( psi_T_vavg[:, :], weights=coor["cos_lat"], axis=1)
+    omega = 7.292e-5
+    f_co = 2 * omega * coor["sin_lat"]
+    
+    f_W = (psi_W[0, :, :] * 0 + 1.0) * f_co[:, None]  # borrow the shape from psi_W
+    mode1_f = np.average( np.sum( f_W * mode_1_dz_weight_W[None, :], axis=1), weights=coor["cos_lat"], axis=0 )
+    print("mode1_f = ", mode1_f)
+
+    fpsi_W = f_co[None, :, None] * psi_W
+    fpsi_vint = np.sum( fpsi_W * mode_1_dz_weight_W[None, None, :], axis=2)
+    data["mode1_psi"] = np.average( fpsi_vint, weights=coor["cos_lat"], axis=1) / mode1_f
  
-    data["s1000_hlat"] = ( b_mean[:, :, 0] - b_mean[:, :, z1000_ind] ) / ( coor["z_T"][z1000_ind] - coor["z_T"][0] )
-    data["s1000_hlat"] = np.average( data["s1000_hlat"][:, y40_ind:], weights=coor["cos_lat"][y40_ind:], axis=1)
+ #   data["s1000_hlat"] = ( b_mean[:, :, 0] - b_mean[:, :, z1000_ind] ) / ( coor["z_T"][z1000_ind] - coor["z_T"][0] )
+ #   data["s1000_hlat"] = np.average( data["s1000_hlat"][:, y40_ind:], weights=coor["cos_lat"][y40_ind:], axis=1)
    
-    b_mean_1000 = np.average( b_mean[:, :, 0:z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
-    data["db_ns"] = ( 
-        np.average(b_mean_1000[:, :y40_ind], weights=coor["cos_lat"][:y40_ind], axis=1) - 
-        np.average(b_mean_1000[:, y40_ind:], weights=coor["cos_lat"][y40_ind:], axis=1)
-    )
+ #   b_mean_1000 = np.average( b_mean[:, :, 0:z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
+ #   data["db_ns"] = ( 
+ #       np.average(b_mean_1000[:, :y40_ind], weights=coor["cos_lat"][:y40_ind], axis=1) - 
+ #       np.average(b_mean_1000[:, y40_ind:], weights=coor["cos_lat"][y40_ind:], axis=1)
+ #   )
     
     db_ew = data["be"] - data["bw_bnd"]
-    db_ew = np.average(db_ew[:, :, 0:z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
+    db_ew = np.sum(db_ew * mode_1_dz_weight_T[None, None, :], axis=2)
     db_ew = np.average(db_ew, weights=coor["cos_lat"], axis=1) 
-    data["db_ew"] = db_ew
+    data["mode1_db_ew"] = db_ew
 
-    #
-
-    b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
-    s_W = ( b_mean[:, :, 0:z1000_ind] - b_mean[:, :, 1:z1000_ind+1] ) / ( coor["z_T"][1:z1000_ind+1] - coor["z_T"][0:z1000_ind] )
-    s_T = (s_W[:, :, :-1] + s_W[:, :, 1:]) / 2.0
-
-    chi_dbdz = s_T * chi_T[:, :, 1:z1000_ind]
-
-    chi_dbdz_vavg = np.average( chi_dbdz, weights=coor["dz_T"][1:z1000_ind], axis=2)
-    data["chi_dbdz"] = np.average( chi_dbdz_vavg[:, :], weights=coor["cos_lat"], axis=1)
- 
     # Convective mixing and convectivity
   
     be = data["be"]
@@ -87,21 +103,23 @@ def makeExtendedData(data, coor):
     data["cvt_e"] = cvt_e
     data["cvt_w"] = cvt_w
     data["d_cvt"] = cvt_w - cvt_e
-    data["chi_dbdz"] = data["chi1000"] * data["s1000"]  
+
 
     if ("qe" in data) and ("qw" in data):
         print("Compute dq")
-        qw_1000 = np.average( data["qw"][:, :, :, z500_ind:z1000_ind], weights=coor["dz_T"][z500_ind:z1000_ind], axis=3)
-        qw_1000 = np.average(qw_1000, weights=coor["cos_lat"], axis=2) 
- 
-        qe_1000 = np.average( data["qe"][:, :, :, z500_ind:z1000_ind], weights=coor["dz_T"][z500_ind:z1000_ind], axis=3)
-        qe_1000 = np.average(qe_1000, weights=coor["cos_lat"], axis=2) 
         
-        # Convert into buoyancy
-        qw_b_1000 = 10 * (qw_1000[:, 0] * 2e-4 - qw_1000[:, 1] * 7e-4) 
-        qe_b_1000 = 10 * (qe_1000[:, 0] * 2e-4 - qe_1000[:, 1] * 7e-4) 
+        # notice that q is separated into T and S components. So z is now the fourth axis
+        qw_vint = np.sum( data["qw"][:, :, :, :] * mode_1_dz_weight_T[None, None , None, :], axis=3)
+        qw = np.average(qw_vint, weights=coor["cos_lat"], axis=2) 
+ 
+        qe_vint = np.sum( data["qe"][:, :, :, :] * mode_1_dz_weight_T[None, None , None, :], axis=3)
+        qe = np.average(qe_vint, weights=coor["cos_lat"], axis=2) 
+        
+        # Convert T and S into buoyancy
+        qw_b = 10 * (qw[:, 0] * 2e-4 - qw[:, 1] * 7e-4) 
+        qe_b = 10 * (qe[:, 0] * 2e-4 - qe[:, 1] * 7e-4) 
 
-        data["dq"] = qe_b_1000 - qw_b_1000
+        data["mode1_dq"] = qe_b - qw_b
 
 # Compute the deep water formation grids
 def computeDeepWaterFormationGrids(b):
