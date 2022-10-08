@@ -11,7 +11,7 @@ plot_codes=(
     $jl $srcdir/plot_etb_bifur_p.jl
     $jl $srcdir/plot_etb_bifur_xi.jl
     $jl $srcdir/plot_etb_bifur_phase.jl
-    $bs $srcdir/plot_regimes.sh
+    $jl $srcdir/plot_regime_diagrams_comparison.jl
     $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
     $bs $srcdir/plot_ZATOM_bifurcation_MLT_S.sh
     $py $srcdir/plot_ZATOM_bifurcation_gamma_xi.py
