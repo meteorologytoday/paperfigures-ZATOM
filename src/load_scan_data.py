@@ -70,14 +70,18 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
     if load_coor:
         
         coor["dz_T"] = coor["z_W"][:-1] - coor["z_W"][1:]
+        coor["dz_W"] = np.zeros(coor["z_W"].shape)
+        coor["dz_W"][1:-1] = (coor["dz_T"][:-1] + coor["dz_T"][1:]) / 2.0
+        coor["dz_W"][0] = coor["dz_T"][0]
+        coor["dz_W"][-1] = coor["dz_T"][-1]
+
         coor["dy_T"] = coor["y_V"][1:]  - coor["y_V"][:-1]
         coor["dA_T"] = coor["dy_T"][:, None] * coor["dz_T"][None, :]
         coor["cos_lat"] = np.cos(coor["y_T"])
+        coor["sin_lat"] = np.sin(coor["y_T"])
         
         coor["y_V"] *= 180.0/np.pi
         coor["y_T"] *= 180.0/np.pi
-        coor["z_T"] *= -1 
-        coor["z_W"] *= -1 
         
 
     return concat_dataset, coor

@@ -70,8 +70,8 @@ repNaN2None(args.cvt_e_rng)
 data = []
 coor = {}
 
-#target_vars = ["psi1000", "db_ew", "s1000", "chi1000", "d_cvt", "chi_dbdz"] #"cvt_e", "cvt_w"]
-target_vars = ["psi1000", "db_ew", "s1000", "chi1000", "dq", "chi_dbdz"]
+#target_vars = ["mode1_psi", "mode1_db_ew", "mode1_s", "mode1_chi", "mode1_dq", "mode1_chi_dbdz"]
+target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s", "mode1_dq"]
 
 folders = args.folder
 legends   = args.legend
@@ -139,13 +139,16 @@ for d in data:
     if param == "Q": 
         d[param] /= 1e6
 
-    d["chi1000"] /= 1e6 * 1e-6
-    d["psi1000"] /= 1e6 
+    d["mode1_chi"] /= (1e6 * 1e-6)  # per Sv  and per 1000 km
+    d["mode1_psi"] /= 1e6 
     d["Psib"] /= 1e6
-    d["db_ns"] *= 1e3
-    d["db_ew"] *= 1e3
-    d["s1000"] *= 1e5
-    d["s1000_hlat"] *= 1e5
+    #d["db_ns"] *= 1e3
+    d["mode1_db_ew"] *= 1e3
+    d["mode1_s"] *= 1e7
+    d["mode1_chi_dbdz"] *= 1e7
+    d["mode1_chi_dbdz_product"] *= 1e7
+    d["mode1_dq"] *= 1e12
+    #d["s1000_hlat"] *= 1e5
 
     y_ind = np.argmin(np.abs(coor["y_T"] - 60.0))
     z_ind = np.argmin(np.abs(coor["z_W"] - 1000.0))
@@ -176,7 +179,7 @@ for k in range(nmarkpairs):
     print("Search for the marker case closest to : (%s, psi) = (%f, %f)" % (param, args.marks[k*2], args.marks[k*2+1]))
     for i, d in enumerate(data):
         for s in range(len(d[param])):
-            _dist = dist(d[param][s]*10, d["psi1000"][s], args.marks[k*2]*10, args.marks[k*2+1])
+            _dist = dist(d[param][s]*10, d["mode1_psi"][s], args.marks[k*2]*10, args.marks[k*2+1])
             if _dist < shortest_dist[k]:
                 shortest_dist[k] = _dist
                 mark_index[k, 0] = i
@@ -217,12 +220,12 @@ else:
                    
 print("Data loaded. Plotting now...")
 
-plot_z_W = coor["z_W"] / 1e3
-plot_z_T = coor["z_T"] / 1e3
+plot_z_W = - coor["z_W"] / 1e3
+plot_z_T = - coor["z_T"] / 1e3
 
 fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
 
-ax_flat = ax.flatten(order='F')
+ax_flat = ax.flatten(order='C')
        
 
 
@@ -275,33 +278,35 @@ ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, loc="upper lef
 
 
 labels = {
-    "psi_fixed" : r"$\left\langle\psi\right\rangle$",
-    "psi1000" : r"$\left\langle\psi\right\rangle$",
-    "chi1000"   : r"$\left\langle\chi\right\rangle$",
-    "s1000"  : r"$\left\langle\partial_z \overline{b} \right\rangle$",
+    "psi_fixed" : r"$\overline{\left\langle\psi\right\rangle}$",
+    "mode1_psi" : r"$\left\langle\psi\right\rangle$",
+    "mode1_chi"   : r"$\left\langle\chi\right\rangle$",
+    "mode1_s"  : r"$\left\langle\partial_z \overline{b} \right\rangle$",
     "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",
     "db_ns"  : r"$\left\langle\partial_y b_e^* \right\rangle$",
-    "db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
+    "mode1_db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
     "cvt_e"  : r"$\tilde{q}_e$",
     "cvt_w"  : r"$\tilde{q}_w$",
     "d_cvt"  : r"$\Delta \tilde{q}$",
-    "dq"     : r"$\left\langle \Delta \tilde{q} \right\rangle$",
-    "chi_dbdz"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
+    "mode1_dq"     : r"$\left\langle \Delta q \right\rangle$",
+    "mode1_chi_dbdz"  : r"$\left\langle\chi \partial_z \overline{b} \right\rangle$",
+    "mode1_chi_dbdz_product"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
 }
 
 units = {
     "psi_fixed"   : "[Sv]",
-    "chi1000"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
-    "psi1000"     : "[Sv]",
-    "s1000"       : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "mode1_chi"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
+    "mode1_psi"     : "[Sv]",
+    "mode1_s"       : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "s1000_hlat"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "db_ns"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
-    "db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "mode1_db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
     "cvt_e"       : r"",
     "cvt_w"       : r"",
     "d_cvt"       : r"",
-    "dq"          : r"",
-    "chi_dbdz"    : r"",
+    "mode1_dq"          : r"[ $ \times 10^{-12} \mathrm{m} / \mathrm{s}^{2} $]",
+    "mode1_chi_dbdz"    : r"[ $ \times 10^{-7} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode1_chi_dbdz_product"    : r"[ $ \times 10^{-7} \mathrm{m}^2 / \mathrm{s}^{3} $]",
 }
 
 for l, var in enumerate(target_vars):
