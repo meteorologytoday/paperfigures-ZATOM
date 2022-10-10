@@ -37,6 +37,11 @@ convert \( figures/figure-forcing.png -gravity North -background white -splice 0
      -gravity North +append \
      figures/merged-forcing.png
 
+echo "Doing merging : extended two-box model dydt plots"
+convert figures/figure-etb_dydt-a.png figures/figure-etb_dydt-b.png -gravity North +append \
+     figures/merged-etb_dydt.png
+
+
 name_pairs=(
     ZATOM_design.png                              fig01.png 
     merged-forcing.png                            fig02.png
@@ -45,7 +50,7 @@ name_pairs=(
     ZATOM_bifur_analysis_xi_marks.png             fig05.png
     ZATOM_bifur_gamma_xi.png                      fig06.png
     cartoon_ETB_forcing.png                       fig07.png
-    figure-reduced_stommel.png                    fig08.png
+    merged-etb_dydt.png                           fig08.png
     merged-stommel_bifurcation_analytical.png     fig09.png
     figure-etb_bifur_phase.png                    fig10.png
     regime_diagrams_comparison.png                fig11.png

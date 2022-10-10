@@ -7,7 +7,7 @@ srcdir=src
 
 plot_codes=(
     $jl $srcdir/plot_forcing.jl
-    $jl $srcdir/plot_stommel_dydt.jl
+    $bs $srcdir/plot_etb_dydt.sh
     $jl $srcdir/plot_etb_bifur_p.jl
     $jl $srcdir/plot_etb_bifur_xi.jl
     $jl $srcdir/plot_etb_bifur_phase.jl
