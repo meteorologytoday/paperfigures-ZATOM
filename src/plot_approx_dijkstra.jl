@@ -191,7 +191,7 @@ for l = 1:2
         ax.set_ylim([-5, -0.6])
         ax.set_xlim([-0.01, 0.15])
 
-        ax.text(0.03, -4.5, format("\$\\overline{{\\gamma}} = {:.0f} \\, \\mathrm{{Sv}}\$", γ_hyds_marks[1] / 1e6), ha="center", va="center")
+        ax.text(0.03, -4.5, format("\$\\overline{{\\gamma}} = {:d} \\, \\mathrm{{Sv}}\$", γ_hyds_marks[1] / 1e6), ha="center", va="center")
         ax.text(0.0655, -1.86, format("\$\\overline{{\\gamma}} = {:.2f} \\, \\mathrm{{Sv}}\$", γ_hyds_marks[2] / 1e6), ha="center", va="center")
         ax.text(0.1157, -1.55, format("\$\\overline{{\\gamma}} = {:.1f} \\, \\mathrm{{Sv}}\$", γ_hyds_marks[3] / 1e6), ha="center", va="center")
     elseif l==2
