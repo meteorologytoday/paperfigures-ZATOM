@@ -27,7 +27,7 @@ mutable struct ETBDims
 
     factors :: Any
 
-    function ETBDims(t_d, t_r, V, δT_star, γ_cusp, Δξ_fold, Δξ_arc, ξ0)
+    function ETBDims(t_d, t_r, V, δT_star, γ_cusp, ξ_cusp, Δξ_fold, Δξ_arc, ξ0; ϵ_zero :: Bool = false)
 
         factor_γ2p = (2 * α_S * t_d * S0) / (α_T * δT_star * V)
         factor_p2γ = factor_γ2p^(-1)
@@ -35,12 +35,28 @@ mutable struct ETBDims
         
         p_cusp = γ_cusp * factor_γ2p
 
+        # Method 1
+        #=
         r = Δξ_fold / Δξ_arc
         μ = ( ( 1 / p_cusp - 1) / r)^0.5
         ν = μ^2 / Δξ_arc
         ϵ = Δξ_fold * ν + 1 - μ
+        =#
 
 
+        # Method 2
+
+        if ϵ_zero == false
+            μ = Δξ_arc / (ξ_cusp - ξ0) * ( 1 - p_cusp^(-1))
+            ν = μ^2 / Δξ_arc
+            ϵ = 1 / p_cusp - μ
+        else
+            μ = p_cusp^(-1)
+            ν = μ * (1 - μ) / (ξ_cusp - ξ0)
+            ϵ = 0.0 
+        end
+
+        println("p_cusp = $(p_cusp)")
         println("V = $(V/1e15) * 1e15 m^3")
         println("t_d = $(t_d / 86400/365) yr.")
         println("factor_γ2p = $factor_γ2p")
@@ -78,6 +94,7 @@ H = 4500.0
 a = 6.4e6
 α_T = 2e-3
 α_S = 7e-3
+#V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (800/4500) * (5/20)
 V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (800/4500) * (5/20)
 
 δT_star = 25.0
@@ -95,6 +112,7 @@ Q = t_d / t_r
 cusp_pt = (γ=0.05e6, ξ=-1.5)
 
 γ_cusp  = cusp_pt.γ
+ξ_cusp  = cusp_pt.ξ
 Δξ_fold = 0.35
 Δξ_arc  = 0.9
 
@@ -116,10 +134,49 @@ etb_dims = Dict(
         V,
         δT_star,
         γ_cusp,
+        ξ_cusp,
         Δξ_fold,
         Δξ_arc,
-        ξ0,
+        ξ0;
     ),
+
+    "etb_zatom_eps0" => ETBDims(
+        t_d,
+        t_r,
+        V,
+        δT_star,
+        γ_cusp,
+        ξ_cusp,
+        Δξ_fold,
+        Δξ_arc,
+        ξ0;
+        ϵ_zero = true,
+    ),
+
+    "etb_zatom_V0.7" => ETBDims(
+        t_d,
+        t_r,
+        0.7 * V,
+        δT_star,
+        γ_cusp,
+        ξ_cusp,
+        Δξ_fold,
+        Δξ_arc,
+        ξ0;
+    ),
+
+    "etb_zatom_V2" => ETBDims(
+        t_d,
+        t_r,
+        2.0 * V,
+        δT_star,
+        γ_cusp,
+        ξ_cusp,
+        Δξ_fold,
+        Δξ_arc,
+        ξ0;
+    ),
+
 
 )
 
@@ -242,9 +299,23 @@ end
 
 
 regimes["etb_zatom"] = Dict(
-        "label"     => "ETBM with \$100\\%\$ V",
-        "label_pos" => (0.134, -0.4),
+        "label"     => "ETBM",
 )
+
+regimes["etb_zatom_eps0"] = Dict(
+        "label"     => "ETBM with \$\\epsilon = 0\$",
+)
+
+regimes["etb_zatom_V0.7"] = Dict(
+        "label"     => "ETBM with \$0.7 \\, V\$",
+)
+
+regimes["etb_zatom_V2"] = Dict(
+        "label"     => "ETBM with \$2 \\, V\$",
+)
+
+
+
 
 for k in keys(data)
     
@@ -314,10 +385,10 @@ using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["etb_zatom", "standard"]
-fcs = [ "none", "none", "none", "none"][end:-1:1]
-ecs = [ "blue", "red", "green" ][end:-1:1]
-hatches = [ "..", "//", "//", "//" ][end:-1:1]
+plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.7", "etb_zatom_V2"]
+fcs =        [ "none", "none", "none", "none", "none"]
+ecs =        [ "black", "red", "blue", "green", "orange"]
+hatches =    [ "..", "..", "\\\\", "//", "||" ]
 
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
@@ -327,8 +398,8 @@ ax.grid()
 ax.set_ylim([-1.6, 0.1])
 ax.set_xlim([0.04, 0.2])
 
-#ax.fill_betweenx(ξs, γ_left_bnd, γ_right_bnd, facecolor="blue", edgecolor="blue",       hatch="..", alpha=0.8, linewidth=1, zorder=10)#, label="Folding along fixed \$\\xi\$")
-#ax.fill_between(ps * factor_p2γSv, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.8, linewidth=1, zorder=10)#, label="Folding along fixed \$p\$")
+#ax.fill_betweenx(ξs, γ_left_bnd, γ_right_bnd, facecolor="blue", edgecolor="blue",       hatch="..", alpha=0.7, linewidth=1, zorder=10)#, label="Folding along fixed \$\\xi\$")
+#ax.fill_between(ps * factor_p2γSv, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.7, linewidth=1, zorder=10)#, label="Folding along fixed \$p\$")
 
 #for (k, key) in enumerate(["standard", "etb_halfV", "etb_zatom", "etb_tenthV"])
 for (k, key) in enumerate(plot_cases)
@@ -357,8 +428,8 @@ for (k, key) in enumerate(plot_cases)
     ))
 
 
-    #ax.fill_betweenx(fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3], hatch="..", facecolor="none",  edgecolor=colors["fixed_ξ"], alpha=0.8, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\xi\$")
-    #ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], hatch="//",  facecolor="none",  edgecolor=colors["fixed_γ"], alpha=0.8, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\gamma\$")
+    #ax.fill_betweenx(fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3], hatch="..", facecolor="none",  edgecolor=colors["fixed_ξ"], alpha=0.7, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\xi\$")
+    #ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], hatch="//",  facecolor="none",  edgecolor=colors["fixed_γ"], alpha=0.7, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\gamma\$")
 
     ax.add_patch(merged_poly)
 
