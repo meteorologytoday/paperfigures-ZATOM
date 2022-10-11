@@ -55,6 +55,7 @@ name_pairs=(
     figure-etb_bifur_phase.png                    fig10.png
     regime_diagrams_comparison.png                fig11.png
     cartoon_dijwei2013_forcing.png                fig12.png
+    approx_dijkstra.png                           fig13.png
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))

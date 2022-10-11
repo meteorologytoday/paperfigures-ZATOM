@@ -95,7 +95,7 @@ a = 6.4e6
 α_T = 2e-3
 α_S = 7e-3
 #V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (800/4500) * (5/20)
-V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (800/4500) * (5/20)
+V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (700/4500) * (5/20)
 
 δT_star = 25.0
 S0 = 35.0
@@ -116,7 +116,7 @@ cusp_pt = (γ=0.05e6, ξ=-1.5)
 Δξ_fold = 0.35
 Δξ_arc  = 0.9
 
-ξ0 = -0.9
+ξ0 = -1.0
 
 γ_corner = cusp_pt[1] * 1e6
 ξ_corner = cusp_pt[2]
@@ -153,10 +153,10 @@ etb_dims = Dict(
         ϵ_zero = true,
     ),
 
-    "etb_zatom_V0.7" => ETBDims(
+    "etb_zatom_V0.8" => ETBDims(
         t_d,
         t_r,
-        0.7 * V,
+        0.8 * V,
         δT_star,
         γ_cusp,
         ξ_cusp,
@@ -165,16 +165,28 @@ etb_dims = Dict(
         ξ0;
     ),
 
-    "etb_zatom_V2" => ETBDims(
+    "etb_zatom_V1.2" => ETBDims(
         t_d,
         t_r,
-        2.0 * V,
+        1.2 * V,
         δT_star,
         γ_cusp,
         ξ_cusp,
         Δξ_fold,
         Δξ_arc,
         ξ0;
+    ),
+
+    "etb_zatom_xi" => ETBDims(
+        t_d,
+        t_r,
+        V,
+        δT_star,
+        γ_cusp,
+        ξ_cusp,
+        Δξ_fold,
+        Δξ_arc,
+        -0.5;
     ),
 
 
@@ -306,12 +318,16 @@ regimes["etb_zatom_eps0"] = Dict(
         "label"     => "ETBM with \$\\epsilon = 0\$",
 )
 
-regimes["etb_zatom_V0.7"] = Dict(
-        "label"     => "ETBM with \$0.7 \\, V\$",
+regimes["etb_zatom_V0.8"] = Dict(
+        "label"     => "ETBM with \$0.8 \\, V\$",
 )
 
-regimes["etb_zatom_V2"] = Dict(
-        "label"     => "ETBM with \$2 \\, V\$",
+regimes["etb_zatom_V1.2"] = Dict(
+        "label"     => "ETBM with \$1.2 \\, V\$",
+)
+
+regimes["etb_zatom_xi"] = Dict(
+        "label"     => "ETBM with \$ \\xi_0 = -0.5 \$",
 )
 
 
@@ -385,16 +401,16 @@ using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.7", "etb_zatom_V2"]
-fcs =        [ "none", "none", "none", "none", "none"]
-ecs =        [ "black", "red", "blue", "green", "orange"]
-hatches =    [ "..", "..", "\\\\", "//", "||" ]
-
+plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.8", "etb_zatom_xi"]
+fcs =        [ "none", "none", "none", "none", "none", "none"]
+ecs =        [ "black", "red", "blue", "green", "orange", "gray"]
+hatches =    [ "..", "..", "\\\\", "//", "||", "||"]
+zorders =    [ 10, 1, 5, 4, 3, 2 ]
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
 ax.set_xlabel("\$\\gamma\$ [Sv]", fontsize=25)
 ax.set_ylabel("\$\\xi\$", fontsize=25)
-ax.grid()
+ax.grid(alpha=0.5)
 ax.set_ylim([-1.6, 0.1])
 ax.set_xlim([0.04, 0.2])
 
@@ -416,22 +432,61 @@ for (k, key) in enumerate(plot_cases)
     # creating polygons
     poly_ξ = createPoly("vertical",   fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3])
     poly_γ = createPoly("horizontal", fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3])
+
+
     #merged_poly = shp_ops.unary_union([poly_ξ, poly_γ])
     merged_poly = shp_ops.unary_union([poly_γ, poly_ξ])
     merged_poly = shpPoly2MatplotPoly(merged_poly, Dict(
         :ec     => ecs[k],
         :fc     => fcs[k],
         :alpha  => 1.0,
-        :zorder => 20,
+        :zorder => zorders[k],
         :hatch  => hatches[k],
         :label  => regime["label"],
     ))
+    
+    ax.add_patch(merged_poly)
+
+    if key == "standard"
+        
+        start_γ = 0.14119
+        _ξ_bnd = [-0.9500, -0.6814]
+        wedge_spacing_γ = 0.0015
+        wedge_width_γ   = 0.0015
+        slope = 1
+        cnt = 3
+        
+        for i = 1:cnt
+            dγ = (wedge_spacing_γ + wedge_width_γ) * (i-1)
+            _start_γ = start_γ + dγ
+            _ξ_bnd_shifted = _ξ_bnd .+ slope * dγ
+            poly = shp_geo.Polygon([
+                [_start_γ, _ξ_bnd_shifted[1]],
+                [_start_γ + wedge_width_γ, _ξ_bnd_shifted[1] + wedge_width_γ * slope * 0],
+                [_start_γ + wedge_width_γ, _ξ_bnd_shifted[2] + wedge_width_γ * slope * 0],
+                [_start_γ, _ξ_bnd_shifted[2]]
+            ])
+            
+            poly = shpPoly2MatplotPoly(poly, Dict(
+                :ec     => ecs[k],
+                :fc     => fcs[k],
+                :alpha  => 1.0,
+                :zorder => zorders[k],
+                :hatch  => hatches[k],
+            ))
+            
+            ax.add_patch(poly)
+
+        end
+
+
+    end
 
 
     #ax.fill_betweenx(fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3], hatch="..", facecolor="none",  edgecolor=colors["fixed_ξ"], alpha=0.7, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\xi\$")
     #ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], hatch="//",  facecolor="none",  edgecolor=colors["fixed_γ"], alpha=0.7, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\gamma\$")
 
-    ax.add_patch(merged_poly)
+
 
     #if length(ARGS) >= 4
     #    ax.set_title(ARGS[4])

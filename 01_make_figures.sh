@@ -15,6 +15,7 @@ plot_codes=(
     $bs $srcdir/plot_ZATOM_bifurcation_xi.sh
     $bs $srcdir/plot_ZATOM_bifurcation_MLT_S.sh
     $py $srcdir/plot_ZATOM_bifurcation_gamma_xi.py
+    $jl $srcdir/plot_approx_dijkstra.jl
 )
 
 #plot_codes=(
