@@ -69,7 +69,7 @@ for ξ in [-1.0, -2.0, 1.0, 0.0]
         ax.plot(ys, dydt(p, ξ, μ, ν, ϵ), "-", color="#cccccc", zorder=1)
     end
     y_kink = _y_kink(p, ξ, μ, ν, ϵ)
-    ax.text(y_kink + ((ξ==0) ? 0.1 : 0), _dydt(y_kink, p, ξ, μ, ν, ϵ) + 0.1, "\$ \\xi = $(format("{:d}", ξ)) \$", color= ( (ξ == 0) ? "black" : "#aaaaaa" ), ha="center", va="bottom")
+    ax.text(y_kink + ((ξ==0) ? 0.1 : 0), _dydt(y_kink, p, ξ, μ, ν, ϵ) + 0.1, "\$ \\tilde{\\xi} = $(format("{:d}", ξ)) \$", color= ( (ξ == 0) ? "black" : "#aaaaaa" ), ha="center", va="bottom")
 end
 
 ax.plot([-5, 5], [0, 0], color="black", linewidth=1)

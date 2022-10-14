@@ -247,7 +247,7 @@ for axis in ["xi", "gamma"]:
     _ax.set_title("(%s)" % ("abcdefg"[axis_i] ))
     _ax.set_xlabel(["$\\gamma$ [Sv]",  "$\\xi$" ][axis_i])
 
-    _ax.set_ylabel("$\\left\\langle\\psi\\right\\rangle$ [Sv]")
+    _ax.set_ylabel("$\\overline{\\left\\langle\\psi\\right\\rangle}$ [Sv]")
     _ax.set_xlim([[0.0, 0.2], [-1.8, 0.6]][axis_i])
     _ax.set_ylim([0.5, 5.5])
 

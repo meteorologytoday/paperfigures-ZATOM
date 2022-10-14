@@ -15,8 +15,8 @@ regimes["standard"]["label"] = "ZATOM"
 Ae = 3.0
 Aw = 1.0
 AH = Ae + Aw
-AL = AH * 2
-a = ( 1 - ξ_bnd ) / (1 + Ae / Aw)
+AL = AH * 1
+a = 0.475 # ( 1 - ξ_bnd ) / (1 + Ae / Aw)
 γ_hyds = collect(range(0, 0.5e6, length=1001))
 γ_locs = [0.001, 0.005, 0.01, 0.015] * 1e6 #collect(range(0, 0.01e6, length=11))[2:end]
 

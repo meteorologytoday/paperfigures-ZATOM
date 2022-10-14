@@ -87,7 +87,7 @@ for (i, (ξ, ϵ)) in enumerate(ξ_ϵs)
     fmt_ξ = (digits[:ξ][i] == 0) ? ":d" : ":.$(digits[:ξ][i])f"
     fmt_ϵ = (digits[:ϵ][i] == 0) ? ":d" : ":.$(digits[:ϵ][i])f"
 
-    ax.text(label_positions[i]..., format("\$(\\xi, \\epsilon) = ({$fmt_ξ}, {$fmt_ϵ}) \$", ξ, ϵ), va="center", ha="center", color=color, size=13)
+    ax.text(label_positions[i]..., format("\$(\\tilde{{\\xi}}, \\epsilon) = ({$fmt_ξ}, {$fmt_ϵ}) \$", ξ, ϵ), va="center", ha="center", color=color, size=13)
 
 end
 

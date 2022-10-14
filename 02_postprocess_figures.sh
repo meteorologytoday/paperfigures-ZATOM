@@ -33,7 +33,7 @@ convert \( figures/figure-etb_bifur_p.png \) \
 
 echo "Doing merging : freshwater forcing and cartoon"
 convert \( figures/figure-forcing.png -gravity North -background white -splice 0x200 -pointsize 120 -annotate +0+120 '(a)' \) \
-    \( figures/cartoon_ZATOM_forcing.png -resize 70% -background white -splice 0x200 -pointsize 120 -annotate +0+120 '(b)' \) \
+    \( figures/fwf_zatom.png -resize 70% -background white -splice 0x200 -pointsize 120 -annotate +0+120 '(b)' \) \
      -gravity North +append \
      figures/merged-forcing.png
 
@@ -46,16 +46,15 @@ name_pairs=(
     MOC_dynamics.png                              fig01.png
     ZATOM_design.png                              fig02.png 
     merged-forcing.png                            fig03.png
-    cartoon_ETB_forcing.png                       fig04.png
-    ZATOM_bifur_analysis_xi.png                   fig05.png
-    ZATOM_bifur_analysis_xi_marks.png             fig06.png
-    ZATOM_bifur_gamma_xi.png                      fig07.png
-    merged-etb_dydt.png                           fig08.png
-    merged-stommel_bifurcation_analytical.png     fig09.png
+    ZATOM_bifur_analysis_xi.png                   fig04.png
+    ZATOM_bifur_analysis_xi_marks.png             fig05.png
+    merged-etb_dydt.png                           fig06.png
+    merged-stommel_bifurcation_analytical.png     fig07.png
+    ZATOM_bifur_gamma_xi.png                      fig08.png
+    regime_diagrams_comparison.png                fig09.png
     figure-etb_bifur_phase.png                    fig10.png
-    regime_diagrams_comparison.png                fig11.png
-    cartoon_dijwei2013_forcing.png                fig12.png
-    figure-approx_dijkstra.png                    fig13.png
+    fwf_dijkstra.png                              fig11.png
+    figure-approx_dijkstra.png                    fig12.png
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))

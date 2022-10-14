@@ -279,7 +279,7 @@ ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, loc="upper lef
 
 labels = {
     "psi_fixed" : r"$\overline{\left\langle\psi\right\rangle}$",
-    "mode1_psi" : r"$\left\langle\psi\right\rangle$",
+    "mode1_psi" : r"$\overline{\left\langle\psi\right\rangle}$",
     "mode1_chi"   : r"$\left\langle\chi\right\rangle$",
     "mode1_s"  : r"$\left\langle\partial_z \overline{b} \right\rangle$",
     "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",

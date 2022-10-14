@@ -104,33 +104,28 @@ fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
 ax.set_xlabel("\$p\$", fontsize=25)
 ax.set_ylabel("\$\\tilde{\\xi}\$", fontsize=25)
-ax.grid()
+ax.grid(alpha=0.5)
 ax.set_ylim([-8, 4.0])
 ax.set_xlim([0.0, 5])
 
+# Just show one direction is sufficient
+#ax.fill_betweenx(ξs, p_left_bnd, p_right_bnd, facecolor="none", edgecolor="blue",       hatch="..", alpha=0.8, linewidth=1, zorder=10, label="Folding along fixed \$\\xi\$")
+ax.fill_between(ps, ξ_left_bnd, ξ_right_bnd, facecolor="orangered",  edgecolor="red",  alpha=0.5, linewidth=1, zorder=10, label="Folding along fixed \$p\$")
 
-ax.fill_betweenx(ξs, p_left_bnd, p_right_bnd, facecolor="none", edgecolor="blue",       hatch="..", alpha=0.8, linewidth=1, zorder=10, label="Folding along fixed \$\\xi\$")
-ax.fill_between(ps, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.8, linewidth=1, zorder=10, label="Folding along fixed \$p\$")
+ax.plot(ax.get_xlim(), [ξ_upper_bound, ξ_upper_bound], ls="dashed", color="#000000")
 
-ax.plot(ax.get_xlim(), [ξ_upper_bound, ξ_upper_bound], ls="dashed", color="#aaaaaa")
-#ax.plot(ax.get_xlim(), [ξ_lower_bound, ξ_lower_bound], ls="dashed", color="#aaaaaa")
-
-ax.text(1.5, ξ_upper_bound + 0.2, "\$\\tilde{\\xi} = \\frac{\\mu}{\\nu} \$", ha="center", va="bottom", color="#555555")
-#ax.text(1.5, ξ_lower_bound + 0.2, "\$ \\left(p, \\tilde{\\xi}\\right) = \\left( \\frac{1}{\\mu + \\epsilon}, - \\frac{\\mu  \\left( \\mu + \\epsilon - 1 \\right) }{\\nu } \\right) \$", ha="center", va="bottom", color="#555555")
-
-#ax.plot([p_lower_bound, p_lower_bound], ax.get_ylim(), ls="dashed", color="#aaaaaa")
-#ax.text(p_lower_bound + 0.1, 1.8, "\$ p = \\frac{1}{\\mu + \\epsilon} \$", ha="left", va="center", rotation=0, color="#555555")
+ax.text(1.5, ξ_upper_bound + 0.2, "\$\\tilde{\\xi} = \\tilde{\\xi}_u = \\frac{\\mu}{\\nu} \$", ha="center", va="bottom", color="#000000")
 
 
-ax.annotate("\$ \\tilde{\\xi} = \\frac{\\mu \\left(1 - \\epsilon \\right)}{\\nu \\left( \\mu + 1 \\right)} \$", xy=(1.1, ξ_critical),  xycoords="data",
-            xytext=(0.5, ξ_critical), textcoords="data",
-            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
-            horizontalalignment="center", verticalalignment="center", fontsize=13,
-)
+#ax.annotate("\$ \\tilde{\\xi} = \\frac{\\mu \\left(1 - \\epsilon \\right)}{\\nu \\left( \\mu + 1 \\right)} \$", xy=(1.1, ξ_critical),  xycoords="data",
+#            xytext=(0.5, ξ_critical), textcoords="data",
+#            arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
+#            horizontalalignment="center", verticalalignment="center", fontsize=13,
+#)
 
 
 ax.scatter(p_lower_bound, ξ_lower_bound, s=20, color="black", zorder=99)
-ax.annotate("\$ \\left(p, \\tilde{\\xi}\\right) = \\left( \\frac{1}{\\mu + \\epsilon}, - \\frac{\\mu  \\left( \\mu + \\epsilon - 1 \\right) }{\\nu } \\right) \$",
+ax.annotate("\$ P = \\left(p_c, \\tilde{\\xi}_c \\right) = \\left( \\frac{1}{\\mu + \\epsilon}, - \\frac{\\mu  \\left( \\mu + \\epsilon - 1 \\right) }{\\nu } \\right) \$",
             xy=(p_lower_bound, ξ_lower_bound),  xycoords="data",
             xytext=(p_lower_bound + 0.5, ξ_lower_bound), textcoords="data",
             arrowprops=Dict("facecolor" => "black", "shrink" => 0.15 , "headwidth" => 5.0, "headlength" => 5.0, "width" => 0.5),
@@ -140,7 +135,7 @@ ax.annotate("\$ \\left(p, \\tilde{\\xi}\\right) = \\left( \\frac{1}{\\mu + \\eps
 
 #ax.set_title("(b)")
 
-ax.legend(loc="center right")
+#ax.legend(loc="center right")
 
 fig.savefig("figures/figure-etb_bifur_phase.png", dpi=300)
 
