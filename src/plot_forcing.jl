@@ -23,7 +23,7 @@ function integrate(y_func, x0, x1, n)
     xs = collect(range(x0, x1, length=n+1))
     dx = xs[2] - xs[1]
     y = y_func.(xs) .* cos.(xs)
-    int_y = (y[1] + y[end] + 2 * sum(y[2:end-1])) * dx
+    int_y = (y[1] + y[end] + 2 * sum(y[2:end-1])) * dx / 2
 
     return int_y
 end
@@ -36,9 +36,9 @@ balance_factor = - integrate(my_tanh, ϕs, ϕc, N) / integrate(my_tanh, ϕc, ϕn
 println("Balance factor: ", balance_factor)
 σ_unorm(ϕ) = my_tanh(ϕ) * ( (ϕ > ϕc) ? balance_factor : 1.0 )
 σ_unorm_pos(ϕ) = max(σ_unorm(ϕ), 0.0)
-σ0 = integrate(σ_unorm_pos, ϕs, ϕn, N)
+σ0 = integrate(σ_unorm_pos, ϕs, ϕn, N) # compute the total positive flux
 
-σ(ϕ) = σ_unorm(ϕ) / σ0
+σ(ϕ) = σ_unorm(ϕ) / σ0 # Divided by σ0 such that the total positive flux is 1 (Sv)
 σ_pos(ϕ) = max(σ(ϕ), 0.0)
 
 function σ_ξ(ϕ, ξ; side)

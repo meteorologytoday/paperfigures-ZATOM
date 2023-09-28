@@ -1,11 +1,6 @@
 from netCDF4 import Dataset
 import os, re
 import numpy as np
-    
-omega = 7.3e-5   # 1/s
-alpha_T = 2e-1   # kg/m^3/K
-alpha_S = 7e-1   # kg/m^3/PSU
-g0 = 10.0        # m/s^2
 
 """
     This function load the scan data.
@@ -22,7 +17,6 @@ def makeExtendedData(data, coor):
     data["bw_bnd"] = data["be"] + 2 * ( data["bw"] - data["be"] )
     psi_W = (data["Psib"][:, :-1, :] + data["Psib"][:, 1:, :]) / 2
 
-    # Next few line is to remove integration of certain latitudes
     lat_exclude = 40.0
     lat_exclude_ind = np.argmin(np.abs(coor["y_T"] - lat_exclude))
 
@@ -31,7 +25,6 @@ def makeExtendedData(data, coor):
 
     Lw = coor["dx_T"][0, 0]
     Le = coor["dx_T"][1, 0]
-    Lambda = Lw / Le
 
     H = np.sum(coor["dz_T"])
 
@@ -41,22 +34,25 @@ def makeExtendedData(data, coor):
     print("Total depth H = ", H)
 
     b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
-    b_eff  = data["bw"] + data["be"] * Lambda
-    s_eff_W = ( b_eff[:, :, :-1] - b_eff[:, :, 1:] ) / ( coor["dz_W"][1:-1][None, None, :] )
-    s_eff_vint = np.sum(s_eff_W * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
-    data["mode1_s_eff"] = np.average( s_eff_vint, weights=coor["cos_lat"], axis=1)
+    s_W = ( b_mean[:, :, :-1] - b_mean[:, :, 1:] ) / ( coor["dz_W"][1:-1][None, None, :] )
+    s_vint = np.sum(s_W * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
+    data["mode1_s"] = np.average( s_vint, weights=coor["cos_lat"], axis=1)
     
 
     chi_vint = np.sum(data["chi"] * mode_1_dz_weight_W[None, None, :], axis=2)
     data["mode1_chi"] = np.average( chi_vint, weights=coor["cos_lat"], axis=1)
     
-    data["mode1_chi_dbdz_product"] = data["mode1_chi"] * data["mode1_s_eff"] / Lw 
+    data["mode1_chi_dbdz_product"] = data["mode1_chi"] * data["mode1_s"]  
 
-    chi_dbdz = s_eff_W * data["chi"][:, :, 1:-1] / Lw
+    chi_dbdz = s_W * data["chi"][:, :, 1:-1]
     chi_dbdz_vint = np.sum( chi_dbdz * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
     data["mode1_chi_dbdz"] = np.average( chi_dbdz_vint[:, :], weights=coor["cos_lat"], axis=1)
 
 
+    
+
+ 
+    omega = 7.292e-5
     f_co = 2 * omega * coor["sin_lat"]
     
     f_W = (psi_W[0, :, :] * 0 + 1.0) * f_co[:, None]  # borrow the shape from psi_W
@@ -66,6 +62,15 @@ def makeExtendedData(data, coor):
     fpsi_W = f_co[None, :, None] * psi_W
     fpsi_vint = np.sum( fpsi_W * mode_1_dz_weight_W[None, None, :], axis=2)
     data["mode1_psi"] = np.average( fpsi_vint, weights=coor["cos_lat"], axis=1) / mode1_f
+ 
+ #   data["s1000_hlat"] = ( b_mean[:, :, 0] - b_mean[:, :, z1000_ind] ) / ( coor["z_T"][z1000_ind] - coor["z_T"][0] )
+ #   data["s1000_hlat"] = np.average( data["s1000_hlat"][:, y40_ind:], weights=coor["cos_lat"][y40_ind:], axis=1)
+   
+ #   b_mean_1000 = np.average( b_mean[:, :, 0:z1000_ind], weights=coor["dz_T"][0:z1000_ind], axis=2)
+ #   data["db_ns"] = ( 
+ #       np.average(b_mean_1000[:, :y40_ind], weights=coor["cos_lat"][:y40_ind], axis=1) - 
+ #       np.average(b_mean_1000[:, y40_ind:], weights=coor["cos_lat"][y40_ind:], axis=1)
+ #   )
     
     db_ew = data["be"] - data["bw_bnd"]
     db_ew = np.sum(db_ew * mode_1_dz_weight_T[None, None, :], axis=2)
@@ -111,8 +116,8 @@ def makeExtendedData(data, coor):
         qe = np.average(qe_vint, weights=coor["cos_lat"], axis=2) 
         
         # Convert T and S into buoyancy
-        qw_b = g0 / rho0 * (qw[:, 0] * alpha_T - qw[:, 1] * alpha_S) 
-        qe_b = g0 / rho0 * (qe[:, 0] * alpha_T - qe[:, 1] * alpha_S) 
+        qw_b = 10 * (qw[:, 0] * 2e-4 - qw[:, 1] * 7e-4) 
+        qe_b = 10 * (qe[:, 0] * 2e-4 - qe[:, 1] * 7e-4) 
 
         data["mode1_dq"] = qe_b - qw_b
 

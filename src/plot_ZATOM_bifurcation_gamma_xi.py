@@ -83,9 +83,9 @@ for axis, pts in selected_data.items():
 
 
         if axis == "xi":
-            folders[axis].append("data/continuation_data_fixed_xi_072522/batch_std20/output_redo_balanced_tanh/CM_xi%08d_pos/lb8" % (round(pt * 100), ))
+            folders[axis].append("data/continuation_data_fixed_xi_20230915/batch_std20/output_redo_balanced_tanh/CM_xi%08d_pos/lb8" % (round(pt * 100), ))
         elif axis == "gamma":
-            folders[axis].append("data/continuation_data_fixed_gamma_072522/batch_std20/output_redo_balanced_tanh/CM_gamma%08d_neg/lb8" % (round(pt * 1000), ))
+            folders[axis].append("data/continuation_data_fixed_gamma_20230915/batch_std20/output_redo_balanced_tanh/CM_gamma%08d_neg/lb8" % (round(pt * 1000), ))
     
 
 

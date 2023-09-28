@@ -51,6 +51,7 @@ parser.add_argument('--db_ns-rng', nargs=2, type=float, default=[np.nan, np.nan]
 parser.add_argument('--db_ew-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--cvt_e-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--cvt_w-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--coe-gamma-xi', type=float, default=9.57e-19)
 parser.add_argument('--marks', nargs='*', type=float, default=[])
 parser.add_argument('--marks-pos', nargs='*', type=str, default=[])
 parser.add_argument('--residue-threshold', type=float, default=1e-12)
@@ -71,7 +72,7 @@ data = []
 coor = {}
 
 #target_vars = ["mode1_psi", "mode1_db_ew", "mode1_s", "mode1_chi", "mode1_dq", "mode1_chi_dbdz"]
-target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s", "mode1_dq"]
+target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff", "mode1_dq"]
 
 folders = args.folder
 legends   = args.legend
@@ -144,9 +145,9 @@ for d in data:
     d["Psib"] /= 1e6
     #d["db_ns"] *= 1e3
     d["mode1_db_ew"] *= 1e3
-    d["mode1_s"] *= 1e7
-    d["mode1_chi_dbdz"] *= 1e7
-    d["mode1_chi_dbdz_product"] *= 1e7
+    d["mode1_s_eff"] *= 1e7
+    d["mode1_chi_dbdz"] *= 1e12
+    d["mode1_chi_dbdz_product"] *= 1e12
     d["mode1_dq"] *= 1e12
     #d["s1000_hlat"] *= 1e5
 
@@ -281,7 +282,7 @@ labels = {
     "psi_fixed" : r"$\overline{\left\langle\psi\right\rangle}$",
     "mode1_psi" : r"$\overline{\left\langle\psi\right\rangle}$",
     "mode1_chi"   : r"$\left\langle\chi\right\rangle$",
-    "mode1_s"  : r"$\left\langle\partial_z \overline{b} \right\rangle$",
+    "mode1_s_eff"  : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle$",
     "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",
     "db_ns"  : r"$\left\langle\partial_y b_e^* \right\rangle$",
     "mode1_db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
@@ -297,7 +298,7 @@ units = {
     "psi_fixed"   : "[Sv]",
     "mode1_chi"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
     "mode1_psi"     : "[Sv]",
-    "mode1_s"       : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "mode1_s_eff"       : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "s1000_hlat"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "db_ns"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
     "mode1_db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
