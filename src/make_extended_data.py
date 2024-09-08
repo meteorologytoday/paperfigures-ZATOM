@@ -6,6 +6,8 @@ omega = 7.3e-5   # 1/s
 alpha_T = 2e-1   # kg/m^3/K
 alpha_S = 7e-1   # kg/m^3/PSU
 g0 = 10.0        # m/s^2
+rho0 = 1e3       # kg/m^3
+
 
 """
     This function load the scan data.
