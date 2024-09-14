@@ -52,13 +52,12 @@ fi
 
 python3 src/plot_bifur_analysis.py --folder \
    ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000400_pos/lb$res  \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000410_pos/lb$res  \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000430_pos/lb$res  \
+   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000420_pos/lb$res  \
    ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000440_pos/lb$res  \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000450_pos/lb$res  \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000470_pos/lb$res  \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000490_pos/lb$res  \
-    --legend '$\xi=-4$' '$\xi=-4.1$' '$\xi=-4.3$' '$\xi=-4.4$' '$\xi=-4.5$' '$\xi=-4.7$' '$\xi=-4.9$' \
+   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000460_pos/lb$res  \
+   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000480_pos/lb$res  \
+   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000500_pos/lb$res  \
+    --legend '$\xi=-4$' '$\xi=-4.2$' '$\xi=-4.4$' '$\xi=-4.6$' '$\xi=-4.8$' '$\xi=-5$' \
     --colors "black" "gray" "orange" "red" "darkgreen" "blue" "purple"  \
     --param gamma \
     --param-rng -0.01 0.16  \
