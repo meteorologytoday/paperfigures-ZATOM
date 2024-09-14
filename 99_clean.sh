@@ -1,3 +1,5 @@
 #!/bin/bash
 
-rm -rf figures final_figures
+source 00_setup.sh
+
+rm -rf $fig_dir $finalfig_dir

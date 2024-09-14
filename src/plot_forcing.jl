@@ -105,7 +105,8 @@ ax_twinx.yaxis.label.set_color("red")
 ax_twinx.tick_params(axis="y", colors="red")
 ax.grid()
 
+ax.set_title("(a)", size=20)
 
-fig.savefig("figures/figure-forcing.png", dpi=300)
+fig.savefig("figures/quantitative-forcing.svg", dpi=300)
 
 plt.show()

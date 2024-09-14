@@ -1,5 +1,8 @@
 *.swp
 *.png
+*.pdf
+*.svg
+*.ini
 data/*
 */__pycache__/*
-!manual_figures/*
+!figures_static/
