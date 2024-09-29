@@ -7,7 +7,7 @@ alpha_T = 2e-1   # kg/m^3/K
 alpha_S = 7e-1   # kg/m^3/PSU
 g0 = 10.0        # m/s^2
 rho0 = 1e3       # kg/m^3
-
+beta = 0.9
 
 """
     This function load the scan data.
@@ -25,11 +25,20 @@ def makeExtendedData(data, coor):
     psi_W = (data["Psib"][:, :-1, :] + data["Psib"][:, 1:, :]) / 2
 
     # Next few line is to remove integration of certain latitudes
-    lat_exclude = 40.0
-    lat_exclude_ind = np.argmin(np.abs(coor["y_T"] - lat_exclude))
+    lat_s = 40.0
+    lat_s_ind = np.argmin(np.abs(coor["y_T"] - lat_s))
 
-    print("Remove the cosine weighting between EQ and %.1f. The found index: %d" % (lat_exclude, lat_exclude_ind))
-    coor["cos_lat"][0:lat_exclude_ind] = 0.0
+    lat_n = 68.0
+    lat_n_ind = np.argmin(np.abs(coor["y_T"] - lat_n))
+
+    print("Integrate only the range between lat [%f, %f], with idx founc [%d, %d]" % (
+        lat_s, lat_n,
+        lat_s_ind, lat_n_ind,
+    ))
+
+    coor["cos_lat"][0:lat_s_ind] = 0.0
+    coor["cos_lat"][lat_n_ind:] = 0.0
+    print( coor["cos_lat"])
 
     Lw = coor["dx_T"][0, 0]
     Le = coor["dx_T"][1, 0]
@@ -41,9 +50,9 @@ def makeExtendedData(data, coor):
     mode_1_dz_weight_W = - (2 / H) * np.sin( coor["z_W"] * np.pi / H) * coor["dz_W"]
     
     print("Total depth H = ", H)
-
-    b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
-    b_eff  = data["bw"] + data["be"] * Lambda
+    print("Beta = ", beta)
+    #b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
+    b_eff  = (1 - beta) * data["bw"] + data["be"] * Lambda
     s_eff_W = ( b_eff[:, :, :-1] - b_eff[:, :, 1:] ) / ( coor["dz_W"][1:-1][None, None, :] )
     s_eff_vint = np.sum(s_eff_W * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
     data["mode1_s_eff"] = np.average( s_eff_vint, weights=coor["cos_lat"], axis=1)

@@ -1,10 +1,5 @@
-import matplotlib as mplt
 import load_scan_data as lsd
 import make_extended_data as med
-
-import matplotlib.gridspec as gridspec
-from matplotlib import cm
-from matplotlib import rc
 
 import os
 import re
@@ -12,18 +7,6 @@ import pprint
 default_linewidth = 1.0;
 default_ticksize = 10.0;
 
-mplt.rcParams['lines.linewidth'] =   default_linewidth;
-mplt.rcParams['axes.linewidth'] =    default_linewidth;
-mplt.rcParams['xtick.major.size'] =  default_ticksize;
-mplt.rcParams['xtick.major.width'] = default_linewidth;
-mplt.rcParams['ytick.major.size'] =  default_ticksize;
-mplt.rcParams['ytick.major.width'] = default_linewidth;
-
-rc('font', **{'size': 15.0});
-rc('axes', **{'labelsize': 15.0});
-rc('mathtext', **{'fontset':'stixsans'});
-
-import matplotlib.pyplot as plt
 
 import os,sys, argparse
 from netCDF4 import Dataset
@@ -55,6 +38,8 @@ parser.add_argument('--coe-gamma-xi', type=float, default=9.57e-19)
 parser.add_argument('--marks', nargs='*', type=float, default=[])
 parser.add_argument('--marks-pos', nargs='*', type=str, default=[])
 parser.add_argument('--residue-threshold', type=float, default=1e-12)
+parser.add_argument('--no-display', action="store_true")
+parser.add_argument('--ncol', type=int, default=3)
 args = parser.parse_args()
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -72,7 +57,8 @@ data = []
 coor = {}
 
 #target_vars = ["mode1_psi", "mode1_db_ew", "mode1_s", "mode1_chi", "mode1_dq", "mode1_chi_dbdz"]
-target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff", "mode1_dq"]
+#target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff", "mode1_dq"]
+target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_dq",]# "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff",]
 
 folders = args.folder
 legends   = args.legend
@@ -221,10 +207,68 @@ else:
                    
 print("Data loaded. Plotting now...")
 
+import tool_fig_config
+
+print("Loading matplotlib...")
+import matplotlib as mplt
+
+if args.no_display:
+    print("`--no-display` is set.")
+    mplt.use("Agg")
+
+else:
+    print("`--no-display` is not set. Will show figures...")
+    mplt.use("TkAgg")
+
+import matplotlib.pyplot as plt
+
+import matplotlib.gridspec as gridspec
+from matplotlib import cm
+from matplotlib import rc
+print("Done")
+mplt.rcParams['lines.linewidth'] =   default_linewidth;
+mplt.rcParams['axes.linewidth'] =    default_linewidth;
+mplt.rcParams['xtick.major.size'] =  default_ticksize;
+mplt.rcParams['xtick.major.width'] = default_linewidth;
+mplt.rcParams['ytick.major.size'] =  default_ticksize;
+mplt.rcParams['ytick.major.width'] = default_linewidth;
+
+rc('font', **{'size': 15.0});
+rc('axes', **{'labelsize': 15.0});
+rc('mathtext', **{'fontset':'stixsans'});
+
+
+
 plot_z_W = - coor["z_W"] / 1e3
 plot_z_T = - coor["z_T"] / 1e3
 
-fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
+ncol = args.ncol
+nrow = int(np.ceil(len(target_vars) / ncol)) 
+
+figsize, gridspec_kw = tool_fig_config.calFigParams(
+    w = 4,
+    h = 4,
+    wspace = 1.0,
+    hspace = 1.5,
+    w_left = 1.0,
+    w_right = 1.0,
+    h_bottom = 1.0,
+    h_top = 1.0,
+    ncol = ncol,
+    nrow = nrow,
+)
+
+fig, ax = plt.subplots(
+    nrow, ncol,
+    figsize=figsize,
+    subplot_kw=dict(aspect="auto"),
+    gridspec_kw=gridspec_kw,
+    constrained_layout=False,
+    squeeze=False,
+    sharex=False,
+)
+
+#fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
 
 ax_flat = ax.flatten(order='C')
        
@@ -275,7 +319,7 @@ for k in range(nmarkpairs):
         ax_flat[l].scatter(d[param][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
         ax_flat[l].text(d[param][s] + args.offset_marks, d[var][s], "123456789"[k], size=12, va="center", ha="left")
 
-ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, loc="upper left")
+ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, borderpad=0.2, loc="center right")
 
 
 labels = {
@@ -306,8 +350,8 @@ units = {
     "cvt_w"       : r"",
     "d_cvt"       : r"",
     "mode1_dq"          : r"[ $ \times 10^{-12} \mathrm{m} / \mathrm{s}^{2} $]",
-    "mode1_chi_dbdz"    : r"[ $ \times 10^{-7} \mathrm{m}^2 / \mathrm{s}^{3} $]",
-    "mode1_chi_dbdz_product"    : r"[ $ \times 10^{-7} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode1_chi_dbdz"    : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode1_chi_dbdz_product"    : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
 }
 
 for l, var in enumerate(target_vars):
@@ -325,6 +369,8 @@ for l, var in enumerate(target_vars):
 
     ax_flat[l].set_xlim(args.param_rng)
     ax_flat[l].set_title("(%s) %s" % ("abcdefg"[l], labels[var],))
+
+    ax_flat[l].grid()
 
 if args.output_bifur != "":
     fig.savefig(args.output_bifur, dpi=300)
@@ -362,9 +408,34 @@ if nmarkpairs != 0:
     dwf_color = (0.6, 0.75, 1.0)
 
     b_cmap = "bwr"
-    
-    fig2 = plt.figure(figsize=(4*nmarkpairs+1, 4*3)) 
-    gs0 = gridspec.GridSpec(3, nmarkpairs+1, figure=fig, width_ratios=nmarkpairs * [1] + [0.05], wspace=0.3)
+
+    ncol = nmarkpairs
+    nrow = 3 
+    figsize, gridspec_kw = tool_fig_config.calFigParams(
+        w = 4,
+        h = 4,
+        wspace = 1.0,
+        hspace = 0.7,
+        w_left = 1.0,
+        w_right = 1.0,
+        h_bottom = 1.0,
+        h_top = 1.0,
+        ncol = ncol,
+        nrow = nrow,
+    )
+
+    fig2, ax = plt.subplots(
+        nrow, ncol,
+        figsize=figsize,
+        subplot_kw=dict(aspect="auto"),
+        gridspec_kw=gridspec_kw,
+        constrained_layout=False,
+        squeeze=False,
+        sharex=False,
+    )
+   
+    #fig2 = plt.figure(figsize=(4*nmarkpairs+1, 4*3)) 
+    #gs0 = gridspec.GridSpec(3, nmarkpairs+1, figure=fig, width_ratios=nmarkpairs * [1] + [0.05], wspace=0.3)
     #fig2, ax2 = plt.subplots(3, nmarkpairs, sharey=False, sharex=True, figsize=(4*nmarkpairs, 4*3), gridspec_kw={'bottom':0.2}, squeeze=False) 
  
     for k in range(nmarkpairs):
@@ -373,7 +444,8 @@ if nmarkpairs != 0:
         d = data[mark_index[k,0]]
         s = mark_index[k, 1]
     
-        _ax = [ fig2.add_subplot(gs0[i, k]) for i in range(3) ]
+        #_ax = [ fig2.add_subplot(gs0[i, k]) for i in range(3) ]
+        _ax = ax[:, k]#[ fig2.add_subplot(gs0[i, k]) for i in range(3) ]
       
         be_plot = ( d["be"][s, :, :].transpose() - b_neworigin ) * b_factor 
         bw_plot = ( d["bw_bnd"][s, :, :].transpose() - b_neworigin ) * b_factor 
@@ -439,11 +511,13 @@ if nmarkpairs != 0:
         _ax[2].set_ylim([1, 0])
 
         
-    cax = fig2.add_subplot(gs0[:, -1])
-    plt.colorbar(mappable=b_mappable, cax=cax, cmap=b_cmap, orientation="vertical", ticks=[], label="$b_w^*$ and $b_e^*$ [$\\mathrm{m}^2 / \\mathrm{s}$]")
+    #cax = fig2.add_subplot(gs0[:, -1])
+    #plt.colorbar(mappable=b_mappable, cax=cax, cmap=b_cmap, orientation="vertical", ticks=[], label="$b_w^*$ and $b_e^*$ [$\\mathrm{m}^2 / \\mathrm{s}$]")
     
     if args.output_marks != "":
         fig2.savefig(args.output_marks, dpi=300)
 
-plt.show()
+if not args.no_display:
+    print("Showing figures...")
+    plt.show()
 

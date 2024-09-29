@@ -4,12 +4,12 @@ source 00_setup.sh
 
 plot_codes=(
     $jl $src_dir/plot_forcing.jl
+    $bs $src_dir/plot_ZATOM_bifurcation_gamma-psi.sh
     $bs $src_dir/plot_etb_dydt.sh
     $jl $src_dir/plot_etb_bifur_p.jl
     $jl $src_dir/plot_etb_bifur_xi.jl
     $jl $src_dir/plot_etb_bifur_phase.jl
     $jl $src_dir/plot_regime_diagrams_comparison.jl
-    $bs $src_dir/plot_ZATOM_bifurcation_xi.sh
     $bs $src_dir/plot_ZATOM_bifurcation_MLT_S.sh
     $py $src_dir/plot_ZATOM_bifurcation_gamma_xi.py
     $jl $src_dir/plot_approx_dijkstra.jl

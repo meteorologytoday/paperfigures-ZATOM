@@ -122,8 +122,8 @@ name_pairs=(
     model.svg                                     fig01
     model_physics.svg                             fig02 
     merged-forcing.svg                            fig03
-#    ZATOM_bifur_analysis_xi.png                   fig04
-#    ZATOM_bifur_analysis_xi_marks.png             fig05
+    ZATOM_bifur_analysis_xi.svg                   fig04
+    ZATOM_bifur_analysis_xi_marks.svg             fig05
 #    merged-etb_dydt.png                           fig06
 #    merged-stommel_bifurcation_analytical.png     fig07
 #    ZATOM_bifur_gamma_xi.png                      fig08
