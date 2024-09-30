@@ -137,6 +137,6 @@ ax.annotate("\$ P = \\left(p_c, \\tilde{\\xi}_c \\right) = \\left( \\frac{1}{\\m
 
 #ax.legend(loc="center right")
 
-fig.savefig("figures/figure-etb_bifur_phase.png", dpi=300)
+fig.savefig("figures/figure-etb_bifur_phase.svg", dpi=300)
 
 plt.show()

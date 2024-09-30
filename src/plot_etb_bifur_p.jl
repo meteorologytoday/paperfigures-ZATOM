@@ -134,6 +134,6 @@ ax.set_xlim([-0.1, 3])
 ax.set_ylim([-1, 5])
 ax.text(0.05, 0.95, "(a)", size=25, va="top", ha="left", transform=ax.transAxes)
 #ax.legend(loc="center right",)
-fig.savefig("figures/figure-etb_bifur_p.png", dpi=300)
+fig.savefig("figures/figure-etb_bifur_p.svg", dpi=300)
 
 plt.show()

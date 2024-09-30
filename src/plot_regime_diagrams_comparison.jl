@@ -500,6 +500,6 @@ end
 
 ax.legend(loc="lower right")
 
-fig.savefig(format("figures/regime_diagrams_comparison.png"), dpi=300)
+fig.savefig(format("figures/regime_diagrams_comparison.svg"), dpi=300)
 
 plt.show()

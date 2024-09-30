@@ -206,6 +206,6 @@ for l = 1:2
 end 
 
 
-fig.savefig(format("figures/figure-approx_dijkstra.png"), dpi=300)
+fig.savefig(format("figures/figure-approx_dijkstra.svg"), dpi=300)
 
 plt.show()

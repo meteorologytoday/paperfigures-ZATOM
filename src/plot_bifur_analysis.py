@@ -21,14 +21,19 @@ def repNaN2None(arr):
 parser = argparse.ArgumentParser()
 parser.add_argument('--folder', nargs='+')
 parser.add_argument('--legend', nargs='*')
+parser.add_argument('--title', type=str, nargs='*', default=None)
 parser.add_argument('--colors', nargs='*')
 parser.add_argument('--auto-color', action="store_true")
+parser.add_argument('--no-legend', action="store_true")
 parser.add_argument('--output-bifur', default="")
 parser.add_argument('--output-marks', default="")
 parser.add_argument('--offset-marks', type=float, default=0)
+parser.add_argument('--legend-loc', type=str, default="best")
+parser.add_argument('--varnames', type=str, nargs="+", required=True)
 parser.add_argument('--param', type=str, choices=["gamma", "xi"])
 parser.add_argument('--param-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--mode1-psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--s1000-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ns-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ew-rng', nargs=2, type=float, default=[np.nan, np.nan])
@@ -37,9 +42,17 @@ parser.add_argument('--cvt_w-rng', nargs=2, type=float, default=[np.nan, np.nan]
 parser.add_argument('--coe-gamma-xi', type=float, default=9.57e-19)
 parser.add_argument('--marks', nargs='*', type=float, default=[])
 parser.add_argument('--marks-pos', nargs='*', type=str, default=[])
+parser.add_argument('--mark-labels', nargs='*', type=str, default=[])
+parser.add_argument('--mark-sides', nargs='*', type=str, default=[], choices=["R", "L"])
 parser.add_argument('--residue-threshold', type=float, default=1e-12)
 parser.add_argument('--no-display', action="store_true")
-parser.add_argument('--ncol', type=int, default=3)
+parser.add_argument('--ncol', type=int, default=1)
+parser.add_argument('--thumbnail-skip', type=int, default=0)
+parser.add_argument('--text', nargs='*', type=str, default=[])
+parser.add_argument('--text-pos', nargs='*', type=float, default=[])
+parser.add_argument('--text-ax', nargs='*', type=int, help="Specify which axes to put text", default=[])
+parser.add_argument('--put-var-on-yaxis', action="store_true")
+
 args = parser.parse_args()
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -58,20 +71,30 @@ coor = {}
 
 #target_vars = ["mode1_psi", "mode1_db_ew", "mode1_s", "mode1_chi", "mode1_dq", "mode1_chi_dbdz"]
 #target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff", "mode1_dq"]
-target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_dq",]# "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff",]
+target_vars = args.varnames
+#["mode1_psi", "mode1_chi_dbdz", "mode1_dq",]# "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff",]
 
 folders = args.folder
 legends   = args.legend
 
-if (legends is None) or (legends is not None and len(legends) < len(folders)):
-    print("Legends do not have the same length of folders. Use numbering instead")
-    legends = ["%d" % (i,) for i in range(len(folders))]
+if args.no_legend:
+    print("The flag `--no-legend ` is set.")
+else:
+    if (legends is None) or (legends is not None and len(legends) < len(folders)):
+        print("Legends do not have the same length of folders. Use numbering instead")
+        legends = ["%d" % (i,) for i in range(len(folders))]
 
-print("Legends are")
-print(legends)
+    print("Legends are")
+    print(legends)
 
 if len(args.marks) % 2 != 0:
     raise Exception("Length of mark is not multiple of 2. It has to be a list of (x, y) pairs. ")
+
+if len(args.text_pos) != 2*len(args.text):
+    raise Exception("Length of `--text-pos` does not match length of `--text` * 2. ")
+
+if len(args.text_ax) != len(args.text):
+    raise Exception("Length of `--text-ax` does not match length of `--text`. ")
 
 
 #
@@ -148,10 +171,12 @@ for d in data:
     nan_idx = d["res"] > args.residue_threshold
     d[param][nan_idx] = np.nan
 #    d["Q"][d["Q"] < 0.075] = np.nan
-    d[param][d[param] > args.param_rng[1]] = np.nan
-    for v in target_vars:
-        d[v][nan_idx] = np.nan
- 
+
+    if args.param_rng[1] is not None:
+        d[param][d[param] > args.param_rng[1]] = np.nan
+        for v in target_vars:
+            d[v][nan_idx] = np.nan
+     
 
 
 # Pick out the marks
@@ -176,11 +201,56 @@ for k in range(nmarkpairs):
 
 
 
+          
+print("Data loaded. Plotting now...")
+
+import tool_fig_config
+
+print("Loading matplotlib...")
+import matplotlib as mplt
+
+if args.no_display:
+    print("`--no-display` is set.")
+    mplt.use("Agg")
+
+else:
+    print("`--no-display` is not set. Will show figures...")
+    mplt.use("TkAgg")
+
+import matplotlib.pyplot as plt
+
+import matplotlib.gridspec as gridspec
+from matplotlib import cm
+from matplotlib import rc
+
+import colorblind
+print("Done")
+mplt.rcParams['lines.linewidth'] =   default_linewidth;
+mplt.rcParams['axes.linewidth'] =    default_linewidth;
+mplt.rcParams['xtick.major.size'] =  default_ticksize;
+mplt.rcParams['xtick.major.width'] = default_linewidth;
+mplt.rcParams['ytick.major.size'] =  default_ticksize;
+mplt.rcParams['ytick.major.width'] = default_linewidth;
+
+rc('font', **{'size': 15.0});
+rc('axes', **{'labelsize': 15.0});
+rc('mathtext', **{'fontset':'stixsans'});
+
 if args.auto_color:
 
     print("Option --auto-color is on. Use self-generated colors.")
-    cmap = plt.cm.get_cmap("Set1", len(legends))
-    colors = [ cmap(i) for i in range(len(legends)) ]
+    #cmap = plt.cm.get_cmap("cmo.phase", len(legends))
+    cmap = mplt.colors.LinearSegmentedColormap.from_list('my_cmap', [
+        '#0072B2', '#009E73', '#D55E00', '#CC79A7', '#F0E442'
+#        (255, 0, 0),
+#        colorblind.BW8color["vermillion"],
+#        colorblind.BW8color["orange"],
+#        colorblind.BW8color["reddishpurple"],
+#        colorblind.BW8color["skyblue"],
+#        colorblind.BW8color["blue"],
+    ])
+    
+    colors = [ cmap(i/len(args.folder)) for i in range(len(args.folder)) ]
     
 else:
 
@@ -204,40 +274,7 @@ else:
 
         if len(colors) < len(legends):
             raise Exception("Colors provided have to be more than number of legends")
-                   
-print("Data loaded. Plotting now...")
-
-import tool_fig_config
-
-print("Loading matplotlib...")
-import matplotlib as mplt
-
-if args.no_display:
-    print("`--no-display` is set.")
-    mplt.use("Agg")
-
-else:
-    print("`--no-display` is not set. Will show figures...")
-    mplt.use("TkAgg")
-
-import matplotlib.pyplot as plt
-
-import matplotlib.gridspec as gridspec
-from matplotlib import cm
-from matplotlib import rc
-print("Done")
-mplt.rcParams['lines.linewidth'] =   default_linewidth;
-mplt.rcParams['axes.linewidth'] =    default_linewidth;
-mplt.rcParams['xtick.major.size'] =  default_ticksize;
-mplt.rcParams['xtick.major.width'] = default_linewidth;
-mplt.rcParams['ytick.major.size'] =  default_ticksize;
-mplt.rcParams['ytick.major.width'] = default_linewidth;
-
-rc('font', **{'size': 15.0});
-rc('axes', **{'labelsize': 15.0});
-rc('mathtext', **{'fontset':'stixsans'});
-
-
+         
 
 plot_z_W = - coor["z_W"] / 1e3
 plot_z_T = - coor["z_T"] / 1e3
@@ -274,9 +311,9 @@ ax_flat = ax.flatten(order='C')
        
 
 
-for i in range(len(legends)):
+for i in range(len(args.folder)):
     
-    print("Plotting %s (%s)" % (legends[i], folders[i]))
+    print("Plotting %s" % (folders[i]))
 
     d = data[i]
     offset = 0
@@ -301,10 +338,21 @@ for i in range(len(legends)):
                 "color" : colors[i],
             }
 
-            if j == 0 and k == 0:
+            if (not args.no_legend) and j == 0 and k == 0:
                 kw_label['label'] = legends[i]
 
             ax_flat[k].plot(x, y, zorder=1, linestyle=linestyle, **kw_label)
+
+
+for k in range(len(args.text)):
+
+    print("Marking the %d-th text." % k)
+    _ax = ax_flat[args.text_ax[k]]
+    x = args.text_pos[2*k+0]
+    y = args.text_pos[2*k+1]
+    s = args.text[k]
+    _ax.text(x, y, s, size=12, va="center", ha="center")
+        
 
 
 
@@ -313,13 +361,24 @@ for k in range(nmarkpairs):
     print(mark_index[k])
     d = data[mark_index[k,0]]
     s = mark_index[k, 1]
-    
+
+    if args.mark_sides[k] == "R":
+        offset_x = args.offset_marks
+        ha = "left"
+    elif args.mark_sides[k] == "L":
+        offset_x = - args.offset_marks
+        ha = "right"
+
     for l, var in enumerate(target_vars):
+
+
         #ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="yellow", edgecolor="k", zorder=50)
         ax_flat[l].scatter(d[param][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
-        ax_flat[l].text(d[param][s] + args.offset_marks, d[var][s], "123456789"[k], size=12, va="center", ha="left")
+        ax_flat[l].text(d[param][s] + offset_x, d[var][s], args.mark_labels[k], size=12, va="center", ha=ha)
+        
 
-ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, borderpad=0.2, loc="center right")
+if not args.no_legend:
+    ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, borderpad=0.2, loc=args.legend_loc)
 
 
 labels = {
@@ -355,7 +414,11 @@ units = {
 }
 
 for l, var in enumerate(target_vars):
-    ax_flat[l].set_ylabel("%s" % (units[var],))
+    
+    if args.put_var_on_yaxis:
+        ax_flat[l].set_ylabel("%s %s" % (labels[var], units[var],))
+    else:
+        ax_flat[l].set_ylabel("%s" % (units[var],))
     
     ylim_attr = "%s_rng" % (var,)
     if hasattr(args, ylim_attr):
@@ -368,11 +431,18 @@ for l, var in enumerate(target_vars):
 
 
     ax_flat[l].set_xlim(args.param_rng)
-    ax_flat[l].set_title("(%s) %s" % ("abcdefg"[l], labels[var],))
+
+    if args.title is not None:
+        _title = args.title[l]
+    else:
+        _title = " %s" % (labels[var],)
+
+    ax_flat[l].set_title("(%s)%s" % ("abcdefg"[l+args.thumbnail_skip], _title,))
 
     ax_flat[l].grid()
 
 if args.output_bifur != "":
+    print("Saving output: ", args.output_bifur)
     fig.savefig(args.output_bifur, dpi=300)
 
 
@@ -506,9 +576,9 @@ if nmarkpairs != 0:
         if k != 0:
             __ax.set_yticklabels([""] * len(__ax.get_yticks()))
 
-        _ax[0].set_ylim([4.5, 0])
-        _ax[1].set_ylim([1, 0])
-        _ax[2].set_ylim([1, 0])
+        #_ax[0].set_ylim([4.5, 0])
+        #_ax[1].set_ylim([1, 0])
+        #_ax[2].set_ylim([1, 0])
 
         
     #cax = fig2.add_subplot(gs0[:, -1])

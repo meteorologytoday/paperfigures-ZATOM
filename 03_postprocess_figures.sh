@@ -25,9 +25,11 @@ cp $fig_static_dir/model_physics.svg $fig_dir/
 
 
 echo "Doing merging : analytical extended two-box model"
-convert \( figures/figure-etb_bifur_p.png \) \
-    \( figures/figure-etb_bifur_xi.png \) -gravity North +append \
-     figures/merged-stommel_bifurcation_analytical.png
+svg_stack.py                        \
+    --direction=h                   \
+    figures/figure-etb_bifur_p.svg  \
+    figures/figure-etb_bifur_xi.svg \
+    > figures/merged-stommel_bifurcation_analytical.svg
 
 
 #echo "Doing merging : regime diagrams"
@@ -44,88 +46,28 @@ svg_stack.py \
     > $fig_dir/merged-forcing.svg
 
 echo "Doing merging : extended two-box model dydt plots"
-convert figures/figure-etb_dydt-a.png figures/figure-etb_dydt-b.png -gravity North +append \
-     figures/merged-etb_dydt.png
-
-
-if [ ] ; then
-echo "Figure 7: Merge Fourier analysis... "
-fixed_dSST=100
-fixed_wnm=010
-svg_stack.py \
-    --direction=v \
-    $fig_dir/spectral_analysis_linearity_on_dSST/linearity_on_dSST_lab_FIXEDDOMAIN_SST_sine_WETLWSW_wnm${fixed_wnm}_MYNN25_hr120-240.svg \
-    $fig_dir/spectral_analysis_tracking_wnm/spectral_analysis_lab_FIXEDDOMAIN_SST_sine_WETLWSW_dT${fixed_dSST}_MYNN25_hr120-240.svg \
-    > $fig_dir/merged-spectral_analysis_wnm${fixed_wnm}_dSST${fixed_dSST}_MYNN25_hr120-240.svg
-
-
-
-echo "Figure 2: Merge experiment design and vertical profile..."
 svg_stack.py \
     --direction=h \
-    $fig_static_dir/experiment_design_3.svg \
-    $fig_dir/input_sounding_woML.svg \
-    > $fig_dir/merged-exp.svg
+    figures/figure-etb_dydt-a.svg \
+    figures/figure-etb_dydt-b.svg \
+    > figures/merged-etb_dydt.svg
 
-echo "Figure 3: Merge snapshots... "
-
-for dT in 100 300; do
-for wnm in 004 010 ; do
-    
-    svg_stack.py \
-        --direction=h \
-        $fig_dir/snapshots_dhr-120/lab_FIXEDDOMAIN_SST_sine_DRY/case_mph-off_wnm${wnm}_U20_dT${dT}_MYNN25/snapshot-part1_120-240.svg \
-        $fig_dir/snapshots_dhr-120/lab_FIXEDDOMAIN_SST_sine_WETLWSW/case_mph-on_wnm${wnm}_U20_dT${dT}_MYNN25/snapshot-part1_120-240.svg \
-        > $fig_dir/merged-snapshot_wnm${wnm}_U20_dT${dT}_part1.svg
-
-    svg_stack.py \
-        --direction=v \
-        $fig_dir/snapshots_dhr-120/lab_FIXEDDOMAIN_SST_sine_DRY/case_mph-off_wnm${wnm}_U20_dT${dT}_MYNN25/snapshot-part2_120-240.svg \
-        $fig_dir/snapshots_dhr-120/lab_FIXEDDOMAIN_SST_sine_WETLWSW/case_mph-on_wnm${wnm}_U20_dT${dT}_MYNN25/snapshot-part2_120-240.svg \
-        > $fig_dir/merged-snapshot_wnm${wnm}_U20_dT${dT}_part2.svg
-
-done
-done
-
-
-
-# Merging the phase diagram
-echo "Figure 6: Merge phase diagram... "
-fixed_dSST=100
-fixed_wnm=010
-svg_stack.py \
-    --direction=v \
-    $fig_dir/dF_flux_decomposition_varying_dSST/lab_FIXEDDOMAIN_SST_sine_WETLWSW/dF_flux_decomposition_onefig_wnm${fixed_wnm}_varying_dSST_MYNN25_hr120-240.svg \
-    $fig_dir/dF_flux_decomposition_varying_wnm/lab_FIXEDDOMAIN_SST_sine_WETLWSW/dF_flux_decomposition_onefig_dSST${fixed_dSST}_varying_wnm_MYNN25_hr120-240.svg \
-    > $fig_dir/merged-dF_flux_decomposition_wnm${fixed_wnm}_dSST${fixed_dSST}_MYNN25_hr120-240.svg
-
-svg_stack.py \
-    --direction=v \
-    $fig_dir/spectral_analysis_tracking_wnm1/spectral_analysis_lab_FIXEDDOMAIN_SST_sine_WETLWSW_MYNN25_hr120-240.svg \
-    $fig_dir/spectral_analysis_tracking_wnm1/spectral_analysis_lab_FIXEDDOMAIN_SST_sine_DRY_MYNN25_hr120-240.svg \
-    > $fig_dir/merged-spectral_analysis_tracking_wnm1_MYNN25_hr120-240.svg
-
-
-
-
-echo "Figure 9: Merging the misc phase diagram..."
+echo "Doing merging : freshwater forcing and cartoon"
 svg_stack.py \
     --direction=h \
-    $fig_dir/phase_misc/lab_FIXEDDOMAIN_SST_sine_WETLWSW/phase_misc_wnm010_varying_dSST_hr120-240.svg \
-    $fig_dir/phase_misc/lab_FIXEDDOMAIN_SST_sine_WETLWSW/phase_misc_dSST100_varying_wnm_hr120-240.svg \
-    > $fig_dir/merged-phase_misc_hr120-240.svg
-
-fi
-
+    $fig_dir/ZATOM_dense_gamma-psi.svg \
+    $fig_dir/ZATOM_dense_xi-psi.svg \
+    > $fig_dir/merged-ZATOM_dense_bifur.svg
 
 name_pairs=(
     model.svg                                     fig01
     model_physics.svg                             fig02 
     merged-forcing.svg                            fig03
     ZATOM_bifur_analysis_xi.svg                   fig04
-    ZATOM_bifur_analysis_xi_marks.svg             fig05
-#    merged-etb_dydt.png                           fig06
-#    merged-stommel_bifurcation_analytical.png     fig07
+    ZATOM_state_diff.svg                          fig05
+    merged-ZATOM_dense_bifur.svg                  fig06
+    merged-etb_dydt.svg                           fig07
+    merged-stommel_bifurcation_analytical.svg     fig08
 #    ZATOM_bifur_gamma_xi.png                      fig08
 #    regime_diagrams_comparison.png                fig09
 #    figure-etb_bifur_phase.png                    fig10
