@@ -1,6 +1,8 @@
 #!/bin/bash
 
+
 res=8
+
 
 python3 src/plot_bifur_analysis.py --folder \
    ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000400_pos/lb$res  \

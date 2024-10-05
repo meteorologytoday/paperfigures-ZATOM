@@ -27,7 +27,18 @@ mutable struct ETBDims
 
     factors :: Any
 
-    function ETBDims(t_d, t_r, V, δT_star, γ_cusp, ξ_cusp, Δξ_fold, Δξ_arc, ξ0; ϵ_zero :: Bool = false)
+    function ETBDims(
+        t_d,
+        t_r,
+        V,
+        δT_star,
+        γ_cusp,
+        ξ_cusp,
+        Δξ_fold,
+        Δξ_arc,
+        ξ0;
+        ϵ_zero :: Bool = false,
+    )
 
         factor_γ2p = (2 * α_S * t_d * S0) / (α_T * δT_star * V)
         factor_p2γ = factor_γ2p^(-1)
@@ -94,8 +105,7 @@ H = 4500.0
 a = 6.4e6
 α_T = 2e-3
 α_S = 7e-3
-#V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (800/4500) * (5/20)
-V   = ((20 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (700/4500) * (5/20)
+V   = ((60 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (1000/H) * (5/60)
 
 δT_star = 25.0
 S0 = 35.0
@@ -109,14 +119,19 @@ t_r = 10 * 86400.0
 
 Q = t_d / t_r
 
-cusp_pt = (γ=0.05e6, ξ=-1.5)
+ξ0 = -4.3
+cusp_pt = (γ=0.025e6, ξ=-5.7498)
+ξ_u = -3.7
 
 γ_cusp  = cusp_pt.γ
 ξ_cusp  = cusp_pt.ξ
-Δξ_fold = 0.35
-Δξ_arc  = 0.9
 
-ξ0 = -1.0
+
+Δξ_fold = 0.0
+Δξ_arc  = ξ_u - ξ_cusp
+
+
+
 
 γ_corner = cusp_pt[1] * 1e6
 ξ_corner = cusp_pt[2]
@@ -153,10 +168,10 @@ etb_dims = Dict(
         ϵ_zero = true,
     ),
 
-    "etb_zatom_V0.8" => ETBDims(
+    "etb_zatom_V0.5" => ETBDims(
         t_d,
         t_r,
-        0.8 * V,
+        0.5 * V,
         δT_star,
         γ_cusp,
         ξ_cusp,
@@ -165,10 +180,10 @@ etb_dims = Dict(
         ξ0;
     ),
 
-    "etb_zatom_V1.2" => ETBDims(
+    "etb_zatom_V1.5" => ETBDims(
         t_d,
         t_r,
-        1.2 * V,
+        1.5 * V,
         δT_star,
         γ_cusp,
         ξ_cusp,
@@ -186,7 +201,19 @@ etb_dims = Dict(
         ξ_cusp,
         Δξ_fold,
         Δξ_arc,
-        -0.5;
+        -4;
+    ),
+
+    "etb_zatom_xi_u" => ETBDims(
+        t_d,
+        t_r,
+        V,
+        δT_star,
+        γ_cusp,
+        ξ_cusp,
+        Δξ_fold,
+        -5.0 - ξ_cusp,
+        ξ0;
     ),
 
 
@@ -318,17 +345,22 @@ regimes["etb_zatom_eps0"] = Dict(
         "label"     => "ETBM with \$\\epsilon = 0\$",
 )
 
-regimes["etb_zatom_V0.8"] = Dict(
-        "label"     => "ETBM with \$0.8 \\, V\$",
+regimes["etb_zatom_V0.5"] = Dict(
+        "label"     => "ETBM with \$0.5 \\, V\$",
 )
 
-regimes["etb_zatom_V1.2"] = Dict(
-        "label"     => "ETBM with \$1.2 \\, V\$",
+regimes["etb_zatom_V1.5"] = Dict(
+        "label"     => "ETBM with \$1.5 \\, V\$",
 )
 
 regimes["etb_zatom_xi"] = Dict(
-        "label"     => "ETBM with \$ \\xi_0 = -0.5 \$",
+        "label"     => "ETBM with \$ \\xi_0 = -4.0 \$",
 )
+
+regimes["etb_zatom_xi_u"] = Dict(
+        "label"     => "ETBM with \$ \\xi_u = -3.0 \$",
+)
+
 
 
 
@@ -401,7 +433,7 @@ using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.8", "etb_zatom_xi"]
+plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.5", "etb_zatom_xi_u"]
 fcs =        [ "none", "none", "none", "none", "none", "none"]
 ecs =        [ "black", "red", "blue", "green", "orange", "gray"]
 hatches =    [ "..", "..", "\\\\", "//", "||", "||"]
@@ -411,8 +443,8 @@ fig, ax = plt.subplots(1, 1, constrained_layout=true)
 ax.set_xlabel("\$\\gamma\$ [Sv]", fontsize=25)
 ax.set_ylabel("\$\\xi\$", fontsize=25)
 ax.grid(alpha=0.5)
-ax.set_ylim([-1.6, 0.1])
-ax.set_xlim([0.04, 0.2])
+ax.set_ylim([-6, -3])
+ax.set_xlim([0.0, 0.12])
 
 #ax.fill_betweenx(ξs, γ_left_bnd, γ_right_bnd, facecolor="blue", edgecolor="blue",       hatch="..", alpha=0.7, linewidth=1, zorder=10)#, label="Folding along fixed \$\\xi\$")
 #ax.fill_between(ps * factor_p2γSv, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.7, linewidth=1, zorder=10)#, label="Folding along fixed \$p\$")

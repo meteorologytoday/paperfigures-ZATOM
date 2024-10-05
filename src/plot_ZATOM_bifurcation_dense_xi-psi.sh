@@ -33,5 +33,5 @@ python3 src/plot_bifur_analysis.py --folder \
     --residue-threshold 3e-10 \
     --title "" \
     --put-var-on-yaxis \
-    --no-display
+#    --no-display
 
