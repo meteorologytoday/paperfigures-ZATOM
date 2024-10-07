@@ -60,16 +60,17 @@ svg_stack.py \
     > $fig_dir/merged-ZATOM_dense_bifur.svg
 
 name_pairs=(
-    model.svg                                     fig01
-    model_physics.svg                             fig02 
+    model_physics.svg                             fig01
+    model.svg                                     fig02
     merged-forcing.svg                            fig03
     ZATOM_bifur_analysis_xi.svg                   fig04
     ZATOM_state_diff.svg                          fig05
     merged-ZATOM_dense_bifur.svg                  fig06
     merged-etb_dydt.svg                           fig07
     merged-stommel_bifurcation_analytical.svg     fig08
+    regime_diagrams_comparison.svg                fig09
 #    ZATOM_bifur_gamma_xi.png                      fig08
-#    regime_diagrams_comparison.png                fig09
+
 #    figure-etb_bifur_phase.png                    fig10
 #    fwf_dijkstra.png                              fig11
 #    figure-approx_dijkstra.png                    fig12

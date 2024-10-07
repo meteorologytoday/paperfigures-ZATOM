@@ -7,6 +7,7 @@ shp_ops = pyimport("shapely.ops")
 plt_patches = pyimport("matplotlib.patches")
 
 include("ZATOM_regimes.jl")
+include("boundary_detect_algo.jl")
 
 mutable struct ETBDims
     
@@ -74,6 +75,8 @@ mutable struct ETBDims
         println("μ = $μ")
         println("ν = $ν")
         println("ϵ = $ϵ")
+        
+        println("Upper limit for ξ = μ/ν = $(μ / ν)")
 
         ψ0 = μ * V / t_d
         println("ψ0 = $(ψ0 / 1e6) Sv")
@@ -96,8 +99,8 @@ mutable struct ETBDims
 end
 
 
-ξs_all = collect(range( -5,  0.5,  length=1001))
-ps_all = collect(range( -0.1, 5.0,  length=1001))
+ξs_all = collect(range( -5,  0.5,  length=101))
+ps_all = collect(range( -0.1, 10.0,  length=1001))
 
 ϕn = 70.0
 ϕs = 10.0
@@ -105,7 +108,10 @@ H = 4500.0
 a = 6.4e6
 α_T = 2e-3
 α_S = 7e-3
-V   = ((60 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)  *  (1000/H) * (5/60)
+full_V   = ((60 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)
+V        = full_V  *  (500/H) * (5/60)
+
+println("V / full_V = ", V / full_V)
 
 δT_star = 25.0
 S0 = 35.0
@@ -130,6 +136,7 @@ cusp_pt = (γ=0.025e6, ξ=-5.7498)
 Δξ_fold = 0.0
 Δξ_arc  = ξ_u - ξ_cusp
 
+println("Δξ_arc = ", Δξ_arc)
 
 
 
@@ -168,10 +175,10 @@ etb_dims = Dict(
         ϵ_zero = true,
     ),
 
-    "etb_zatom_V0.5" => ETBDims(
+    "etb_zatom_V0.8" => ETBDims(
         t_d,
         t_r,
-        0.5 * V,
+        0.8 * V,
         δT_star,
         γ_cusp,
         ξ_cusp,
@@ -180,10 +187,10 @@ etb_dims = Dict(
         ξ0;
     ),
 
-    "etb_zatom_V1.5" => ETBDims(
+    "etb_zatom_V1.2" => ETBDims(
         t_d,
         t_r,
-        1.5 * V,
+        1.2 * V,
         δT_star,
         γ_cusp,
         ξ_cusp,
@@ -204,7 +211,7 @@ etb_dims = Dict(
         -4;
     ),
 
-    "etb_zatom_xi_u" => ETBDims(
+    "etb_zatom_xi_0" => ETBDims(
         t_d,
         t_r,
         V,
@@ -212,8 +219,8 @@ etb_dims = Dict(
         γ_cusp,
         ξ_cusp,
         Δξ_fold,
-        -5.0 - ξ_cusp,
-        ξ0;
+        Δξ_arc,
+        ξ0 + 0.5;
     ),
 
 
@@ -306,12 +313,16 @@ data = Dict()
 
 for (k, ed) in etb_dims 
 
+    println("## Computing boundaries for case: ", k)
+
     ξs, p_left_bnd, p_right_bnd = generate_bnds_p(ξs_all, ed)
     ps, ξ_left_bnd, ξ_right_bnd = generate_bnds_ξ(ps_all, ed)
 
-    println("Length of ξs = ", length(ξs))
-    println("Length of ps = ", length(ps))
-    
+
+    #println("ps_all = ", ps_all)
+    #println("ξ_left_bnd = ", ξ_left_bnd)
+    #println("ξ_right_bnd = ", ξ_right_bnd)
+
     γ_left_bnd  = p_left_bnd  * ed.factors.p2γSv
     γ_right_bnd = p_right_bnd * ed.factors.p2γSv
     γs          = ps          * ed.factors.p2γSv
@@ -320,6 +331,13 @@ for (k, ed) in etb_dims
     ξ_left_bnd  .+= ed.ξ0
     ξ_right_bnd .+= ed.ξ0
     ξs          .+= ed.ξ0
+
+    #println("γs = ", γs)
+    #println("ξ_left_bnd = ", ξ_left_bnd)
+    #println("ξ_right_bnd = ", ξ_right_bnd)
+        
+    println("Upper limit for ξ = μ/ν + ξ0 = $(ed.μ / ed.ν + ed.ξ0)")
+
 
     #println("ξ0 = ", ed.ξ0)
     #println("ξs + ξ0 = ", ξs .+ ed.ξ0)
@@ -345,20 +363,20 @@ regimes["etb_zatom_eps0"] = Dict(
         "label"     => "ETBM with \$\\epsilon = 0\$",
 )
 
-regimes["etb_zatom_V0.5"] = Dict(
-        "label"     => "ETBM with \$0.5 \\, V\$",
+regimes["etb_zatom_V0.8"] = Dict(
+        "label"     => "ETBM with \$0.8 \\, V\$",
 )
 
-regimes["etb_zatom_V1.5"] = Dict(
-        "label"     => "ETBM with \$1.5 \\, V\$",
+regimes["etb_zatom_V1.2"] = Dict(
+        "label"     => "ETBM with \$1.2 \\, V\$",
 )
 
 regimes["etb_zatom_xi"] = Dict(
         "label"     => "ETBM with \$ \\xi_0 = -4.0 \$",
 )
 
-regimes["etb_zatom_xi_u"] = Dict(
-        "label"     => "ETBM with \$ \\xi_u = -3.0 \$",
+regimes["etb_zatom_xi_0"] = Dict(
+        "label"     => "ETBM with \$ \\xi_0 \$ increase by \$0.5\$ ",
 )
 
 
@@ -433,7 +451,7 @@ using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.5", "etb_zatom_xi_u"]
+plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.8", "etb_zatom_xi_0"]
 fcs =        [ "none", "none", "none", "none", "none", "none"]
 ecs =        [ "black", "red", "blue", "green", "orange", "gray"]
 hatches =    [ "..", "..", "\\\\", "//", "||", "||"]
@@ -443,13 +461,10 @@ fig, ax = plt.subplots(1, 1, constrained_layout=true)
 ax.set_xlabel("\$\\gamma\$ [Sv]", fontsize=25)
 ax.set_ylabel("\$\\xi\$", fontsize=25)
 ax.grid(alpha=0.5)
+
 ax.set_ylim([-6, -3])
-ax.set_xlim([0.0, 0.12])
+ax.set_xlim([0.0, 0.15])
 
-#ax.fill_betweenx(ξs, γ_left_bnd, γ_right_bnd, facecolor="blue", edgecolor="blue",       hatch="..", alpha=0.7, linewidth=1, zorder=10)#, label="Folding along fixed \$\\xi\$")
-#ax.fill_between(ps * factor_p2γSv, ξ_left_bnd, ξ_right_bnd, facecolor="none",  edgecolor="orangered",  hatch="//", alpha=0.7, linewidth=1, zorder=10)#, label="Folding along fixed \$p\$")
-
-#for (k, key) in enumerate(["standard", "etb_halfV", "etb_zatom", "etb_tenthV"])
 for (k, key) in enumerate(plot_cases)
 
     println("Plotting regime = $key")
@@ -461,13 +476,26 @@ for (k, key) in enumerate(plot_cases)
 
     label = regime["label"]
 
-    # creating polygons
-    poly_ξ = createPoly("vertical",   fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3])
-    poly_γ = createPoly("horizontal", fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3])
+
+    if key == "standard"
+
+        pts = generate_bound_points(fixed_ξ, fixed_γ)
+
+        println(pts)
+
+        merged_poly = shp_geo.Polygon(pts)
+        
+        
+    else
+        # creating polygons
+        poly_ξ = createPoly("vertical",   fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3])
+        poly_γ = createPoly("horizontal", fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3])
 
 
-    #merged_poly = shp_ops.unary_union([poly_ξ, poly_γ])
-    merged_poly = shp_ops.unary_union([poly_γ, poly_ξ])
+        merged_poly = shp_ops.unary_union([poly_γ, poly_ξ])
+
+    end
+
     merged_poly = shpPoly2MatplotPoly(merged_poly, Dict(
         :ec     => ecs[k],
         :fc     => fcs[k],
@@ -476,9 +504,48 @@ for (k, key) in enumerate(plot_cases)
         :hatch  => hatches[k],
         :label  => regime["label"],
     ))
-    
+ 
     ax.add_patch(merged_poly)
+    println("Merged_poly: ", merged_poly)
 
+    # Plot the lines used to determine the boundaries
+    if key == "standard"
+    
+        for i in 1:size(fixed_γ, 1)
+            _γ       = fixed_γ[i, 1]
+            _ξ_lower = fixed_γ[i, 2]
+            _ξ_upper = fixed_γ[i, 3]
+            ax.plot(
+                [_γ, _γ, ],
+                [_ξ_lower, _ξ_upper, ],
+                linestyle="solid",
+                color=ecs[k],
+                linewidth=2,
+                marker="o",
+                markersize=5,
+            )
+        end
+
+        for i in 1:size(fixed_ξ, 1)
+            _ξ       = fixed_ξ[i, 1]
+            _γ_lower = fixed_ξ[i, 2]
+            _γ_upper = fixed_ξ[i, 3]
+            ax.plot(
+                [_γ_lower, _γ_upper, ],
+                [_ξ, _ξ, ],
+                linestyle="solid",
+                color=ecs[k],
+                linewidth=2,
+                marker="o",
+                markersize=5,
+
+            )
+        end 
+
+    end
+
+    # Plot the little rectangle to indicate the regime
+    # is extending.
     if key == "standard"
         
         start_γ = 0.14119
@@ -514,21 +581,7 @@ for (k, key) in enumerate(plot_cases)
 
     end
 
-
-    #ax.fill_betweenx(fixed_ξ[:, 1], fixed_ξ[:, 2], fixed_ξ[:, 3], hatch="..", facecolor="none",  edgecolor=colors["fixed_ξ"], alpha=0.7, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\xi\$")
-    #ax.fill_between(fixed_γ[:, 1], fixed_γ[:, 2], fixed_γ[:, 3], hatch="//",  facecolor="none",  edgecolor=colors["fixed_γ"], alpha=0.7, linewidth=1, zorder=10, label="[$label] Folding along fixed \$\\gamma\$")
-
-
-
-    #if length(ARGS) >= 4
-    #    ax.set_title(ARGS[4])
-    #end
-
-    #ax.text(regime["label_pos"]..., regime["label"], size=12, ha="center", va="center", color=ecs[k])
 end
-
-#ax.scatter(P_adjusted..., s=20, color="black", zorder=99)
-#ax.text(P_adjusted[1] + 0.01, P_adjusted[2], "\$P\$", va="center", ha="center", size=15)
 
 ax.legend(loc="lower right")
 

@@ -139,4 +139,5 @@ ax.annotate("\$ P = \\left(p_c, \\tilde{\\xi}_c \\right) = \\left( \\frac{1}{\\m
 
 fig.savefig("figures/figure-etb_bifur_phase.svg", dpi=300)
 
+println("Showing figure...")
 plt.show()
