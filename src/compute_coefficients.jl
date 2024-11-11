@@ -110,6 +110,7 @@ println("Test: (2/H) ∫ sin^2(πz/H) dz = ", avg_z(ψ1, 1000), ". Expected valu
 # Compute <f>
 f_avg = 4 * Ω / π * (sin(avg_ϕn) - sin(avg_ϕs))
 println("<f> = ", f_avg)
+println("A = (π / H)^2 * <f> = ", (π / H)^2 * f_avg)
 
 # Compute <σ Θ_ϕc Θ_HS>
 
@@ -131,4 +132,9 @@ println("<σ Θ_ϕc Θ_HS> = ", avg_σ_Θ_ϕc_Θ_HS)
 println("Therefore: ")
 println("α_S g / ρ0 (1 + Λ) S0 / H_S = ", α_S * g0 / ρ0 * (1 + Λ) * S0 / H_S)
 println("α_S g / ρ0 (1 + Λ) S0 <σ Θ_ϕc Θ_HS> / H_S = ", avg_σ_Θ_ϕc_Θ_HS * α_S * g0 / ρ0 * (1 + Λ) * S0 / H_S)
+
+
+
+
+
 

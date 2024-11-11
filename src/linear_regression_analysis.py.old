@@ -1,0 +1,329 @@
+import matplotlib as mplt
+import load_scan_data as lsd
+import make_extended_data as med
+
+import matplotlib.gridspec as gridspec
+from matplotlib import cm
+from matplotlib import rc
+
+import os
+import re
+import pprint
+default_linewidth = 1.0;
+default_ticksize = 10.0;
+
+mplt.rcParams['lines.linewidth'] =   default_linewidth;
+mplt.rcParams['axes.linewidth'] =    default_linewidth;
+mplt.rcParams['xtick.major.size'] =  default_ticksize;
+mplt.rcParams['xtick.major.width'] = default_linewidth;
+mplt.rcParams['ytick.major.size'] =  default_ticksize;
+mplt.rcParams['ytick.major.width'] = default_linewidth;
+
+rc('font', **{'size': 15.0});
+rc('axes', **{'labelsize': 15.0});
+rc('mathtext', **{'fontset':'stixsans'});
+
+import matplotlib.pyplot as plt
+
+import os,sys, argparse
+from netCDF4 import Dataset
+import numpy as np
+
+
+def repNaN2None(arr):
+    for i, elm in enumerate(arr):
+        if np.isnan(elm):
+            arr[i] = None
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--folder', nargs='+')
+parser.add_argument('--legend', nargs='*')
+parser.add_argument('--colors', nargs='*')
+parser.add_argument('--gamma-scale', help="Scale of gamma in Sv", require=True)
+parser.add_argument('--psi-scale', help="Scale of psi in Sv", require=True)
+parser.add_argument('--sampling-spacing', help="Sampling spacing after scaled", require=True)
+parser.add_argument('--auto-color', action="store_true")
+parser.add_argument('--output', default="")
+parser.add_argument('--residue-threshold', type=float, default=1e-12)
+args = parser.parse_args()
+
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(args)
+
+repNaN2None(args.gamma_rng)
+
+data = []
+coor = {}
+
+target_vars = ["psi1000", "db_ew", "s1000", "chi1000", "d_cvt"] #"cvt_e", "cvt_w"]
+
+folders = args.folder
+legends   = args.legend
+
+N_data = len(folders)
+
+if (legends is None) or (legends is not None and len(legends) < len(folders)):
+    print("Legends do not have the same length of folders. Use numbering instead")
+    legends = ["%d" % (i,) for i in range(len(folders))]
+
+print("Legends are")
+print(legends)
+
+
+
+# Data contains a list of folders (cases)
+# and each case has multiple data files
+data_to_delete = []
+data = []
+coor = None
+loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable"]
+for i, folder in enumerate(folders):
+
+    print("Loading the folder: %s" % (folder,))
+
+    _data, _coor = lsd.loadScanData(folder, loaded_varnames, load_coor=(coor is None))
+
+    try:
+        _data, _coor = lsd.loadScanData(folder, loaded_varnames, load_coor=(coor is None))
+    except Exception as e:
+        print("Error occurs. Skip this one.")
+        data_to_delete.append(i)
+        data.append(None)
+        continue
+ 
+    print("Number of records: %d" % (len(_data["Q"]))) 
+    if coor is None:
+        coor = _coor
+
+    med.makeExtendedData(_data, coor)
+
+    data.append(_data)
+
+data_to_delete.reverse() # important. delete from last to first to avoid reordering
+print("Delete index: ", data_to_delete)
+
+for rm_idx in data_to_delete:
+    del folders[rm_idx]
+    del data[rm_idx]
+    del legends[rm_idx]
+
+
+for d in data:
+    d["Q"] /= 1e6
+    d["mode1_psi"] /= 1e6
+
+# remove data points that is not converging
+for d in data:
+    nan_idx = d["res"] > args.residue_threshold
+    d["Q"][nan_idx] = np.nan
+    d["Q"][d["Q"] > args.gamma_rng[1]] = np.nan
+    d["Q"][d["Q"] < args.gamma_rng[0]] = np.nan
+    for v in target_vars:
+        d[v][nan_idx] = np.nan
+
+
+    valid_idx = np.isfinite(d["Q"])
+    d["Q"] = d["Q"][valid_idx]
+    d["mode1_psi"] = d["mode1_psi"][valid_idx]
+
+
+print("Finding the indexes to to subsampling")
+
+def findSamplingIdxBySpacing(s, spacing):
+ 
+    if not np.all(np.isfinite(s)):
+        raise Exception("The array `s` is not all finite")
+  
+    ds = s[1:] - s[:-1]
+
+    if np.any(ds <= 0):
+        raise Exception("The array `s` is not monotonically increasing")
+
+ 
+    idx = []
+    anchored_idx = 0
+
+    for i in range(len(s)):
+        
+        ds = s[i] - s[anchored_idx]
+        
+        if ds >= spacing:
+            idx.append(i)
+            anchored_idx = i
+
+    return np.array(idx)        
+    
+    
+subsampled_data = []
+    
+for d in data:
+    
+    Q_tmp = d["Q"] / args.Q_scale
+    psi_tmp = d["mode1_psi"] / args.psi_scale
+  
+    ds = np.zeros_like(Q_tmp)
+    ds[1:] = ((Q_tmp[1:] - Q_tmp[:-1])**2 + (psi_tmp[1:] - psi_tmp[:-1])**2)**0.5
+    s = np.cumsum(ds)
+    
+    idx = findSamplingIdxBySpacing(s, args.sampling_spacing) 
+
+    d["subsampling_idx"] = idx
+
+
+# Step 1: Construct parameter space
+N_beta = 11
+N_tau = 11
+
+param_tau  = np.linspace(tau0, tau1, N_tau)
+param_beta = np.linspace(0, 1, N_beta)
+sigma_psi = 0.5e6
+ln_post = np.zeros( (N_tau, N_beta) )
+
+
+# Step 2:
+# scan through possible beta and tau
+for j in range(N_tau):
+    for i in range(N_beta):
+        for k, d in enumerate(data):
+            err = computeError(data, A, B)
+            ln_post[j, i] += - np.sum(err**2 / (2 * sigma_psi**2))
+
+# Step 3:
+# output posterior
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if args.auto_color:
+
+    print("Option --auto-color is on. Use self-generated colors.")
+    cmap = plt.cm.get_cmap("Set1", len(legends))
+    colors = [ cmap(i) for i in range(len(legends)) ]
+    
+else:
+
+    if args.colors is None:
+        colors = [
+            'red',
+            'darkorange',
+            'darkgreen', 
+            'blue',
+            'violet',
+            'black',
+            "grey",
+            "dodgerblue",
+            "brown",
+            "purple",
+            "pink",
+        ]
+    else:
+
+        colors = args.colors
+
+        if len(colors) < len(legends):
+            raise Exception("Colors provided have to be more than number of legends")
+                   
+print("Data loaded. Plotting now...")
+
+# Multi linear regression
+from sklearn.linear_model import LinearRegression
+   
+fig, ax = plt.subplots(1, 4, figsize=(18, 4), constrained_layout=True)
+
+marker = ["o", "^", "+", "x", "s"]
+
+for i, d in enumerate(data):
+
+    print("Doing linear regression of %s (%s)" % (legends[i], folders[i]))
+
+    d = data[i]
+
+    Q  = d["Q"]
+    psi = d["mode1_psi"]
+    subsampling_idx = d["subsampling_idx"]
+
+    subQ   = Q[subsampling_idx]
+    subpsi = psi[subsampling_idx]
+     
+    
+    ax.scatter(y, y_predict, s=10, marker=marker[i], label=legends[i])
+
+    # ======================
+    
+    X = np.zeros((len(Q), 3))
+    X[:, 0] = chi_dbdz[:]
+    X[:, 1] = dq[:]
+    X[:, 2] = Q[:]
+    
+    y = db_ew
+    reg = LinearRegression(normalize=True).fit(X, y)
+    y_predict = reg.predict(X) 
+    print(reg.score(X, y))
+    print(reg.coef_)
+
+    ax[0].scatter(y, y_predict, s=10, marker=marker[i], label=legends[i])
+
+
+    # ======================
+    X = np.zeros((len(Q), 1))
+    X[:, 0] = chi_dbdz[:]
+    
+    y = db_ew
+    reg = LinearRegression(normalize=True).fit(X, y)
+    y_predict = reg.predict(X) 
+    print(reg.score(X, y))
+    print(reg.coef_)
+    ax[1].scatter(y, y_predict, s=10, marker=marker[i], label=legends[i])
+
+
+    # ======================
+    X = np.zeros((len(Q), 1))
+    X[:, 0] = dq[:]
+    
+    y = db_ew
+    reg = LinearRegression(normalize=True).fit(X, y)
+    y_predict = reg.predict(X) 
+    print(reg.score(X, y))
+    print(reg.coef_)
+    ax[2].scatter(y, y_predict, s=10, marker=marker[i], label=legends[i])
+
+
+
+    # ======================
+    X = np.zeros((len(Q), 1))
+    X[:, 0] = Q[:]
+    
+    y = db_ew
+    reg = LinearRegression(normalize=True).fit(X, y)
+    y_predict = reg.predict(X) 
+    print(reg.score(X, y))
+    print(reg.coef_)
+    ax[3].scatter(y, y_predict, s=10, marker=marker[i], label=legends[i])
+
+for i in range(4):
+    ax[i].plot([-3, 3], [-3, 3], ls="dashed", color="gray")
+
+
+ax[0].set_title("All comp")
+ax[1].set_title("chi_dbdz")
+ax[2].set_title("dq")
+ax[3].set_title("Q")
+
+
+ax[0].legend()
+
+plt.show()
+

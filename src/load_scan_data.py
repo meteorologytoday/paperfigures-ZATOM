@@ -10,7 +10,7 @@ import numpy as np
     It also load the coordinate data. It selects the first
     xxxx.nc file.
 """
-def loadScanData(folder, loaded_varnames, load_coor=True):
+def loadScanData(folder, loaded_varnames, load_coor=True, residue_threshold=np.nan):
 
     filenames = os.listdir(folder)
     filenames.sort()
@@ -46,7 +46,18 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
                 for varname in loaded_varnames:
                     d[varname] = f.variables[varname][:]
                     #print("Shape of variable %s : " % (varname,), d[varname].shape)
+               
+                attrs = f.ncattrs()
+                if "xi" in attrs:
+                    d["xi"] = np.zeros_like( d["res"] ) + f.getncattr("xi")
+ 
+                
+                if "Q" in attrs:
+                    d["Q"] = np.zeros_like( d["res"] ) + f.getncattr("Q")
+                
+                
 
+                
             data_by_file.append(d)
             
             load_anything = True
@@ -54,9 +65,16 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
     if load_anything == False:
         raise Error("No data is detected.")
 
+
+    loaded_varnames = loaded_varnames.copy()
+
+    for varname in ["xi", "Q"]:
+        if varname not in loaded_varnames:
+            loaded_varnames.append(varname) 
+
     # Processing data
     concat_dataset = {}
-    for varname in loaded_varnames :
+    for varname in loaded_varnames:
         tmp_data = None
         for i, d in enumerate(data_by_file):
             if i == 0:
@@ -67,6 +85,17 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
         concat_dataset[varname] = tmp_data
 
 
+    # Remove nan
+    if np.isfinite(residue_threshold):
+        valid_idx = concat_dataset["res"] < residue_threshold
+        for varname in loaded_varnames:
+            
+            selector = [valid_idx,]
+            for _ in range(len(concat_dataset[varname].shape)-1):
+                selector.append(slice(None))
+            
+            concat_dataset[varname] = concat_dataset[varname][*selector]
+    
     if load_coor:
         
         coor["dz_T"] = coor["z_W"][:-1] - coor["z_W"][1:]
@@ -76,9 +105,16 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
         coor["dz_W"][-1] = coor["dz_T"][-1]
 
         coor["dy_T"] = coor["y_V"][1:]  - coor["y_V"][:-1]
+        coor["dy_V"] = np.zeros(coor["y_V"].shape)
+        coor["dy_V"][1:-1] = (coor["dy_T"][:-1] + coor["dy_T"][1:]) / 2.0
+        coor["dy_V"][0] = coor["dy_T"][0]
+        coor["dy_V"][-1] = coor["dy_T"][-1]
+
         coor["dA_T"] = coor["dy_T"][:, None] * coor["dz_T"][None, :]
-        coor["cos_lat"] = np.cos(coor["y_T"])
-        coor["sin_lat"] = np.sin(coor["y_T"])
+        coor["cos_lat_T"] = np.cos(coor["y_T"])
+        coor["cos_lat_V"] = np.cos(coor["y_V"])
+        coor["sin_lat_T"] = np.sin(coor["y_T"])
+        coor["sin_lat_V"] = np.sin(coor["y_V"])
         
         coor["y_V"] *= 180.0/np.pi
         coor["y_T"] *= 180.0/np.pi

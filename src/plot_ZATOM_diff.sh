@@ -6,7 +6,7 @@ python3 src/plot_diff_states.py --folder \
    ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000440_pos/lb$res  \
    ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000440_pos/lb$res  \
     --diff-idx 17 43 \
-    --titles '$S_{R}$' '$\Delta S = S_{L} - S_{R}$' \
+    --titles '$S_{A}$' '$\Delta S = S_{B} - S_{A}$' \
     --output "figures/ZATOM_state_diff.svg" \
     --no-display
 

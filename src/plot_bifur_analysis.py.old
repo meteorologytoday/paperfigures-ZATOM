@@ -1,10 +1,5 @@
-import matplotlib as mplt
 import load_scan_data as lsd
 import make_extended_data as med
-
-import matplotlib.gridspec as gridspec
-from matplotlib import cm
-from matplotlib import rc
 
 import os
 import re
@@ -12,18 +7,6 @@ import pprint
 default_linewidth = 1.0;
 default_ticksize = 10.0;
 
-mplt.rcParams['lines.linewidth'] =   default_linewidth;
-mplt.rcParams['axes.linewidth'] =    default_linewidth;
-mplt.rcParams['xtick.major.size'] =  default_ticksize;
-mplt.rcParams['xtick.major.width'] = default_linewidth;
-mplt.rcParams['ytick.major.size'] =  default_ticksize;
-mplt.rcParams['ytick.major.width'] = default_linewidth;
-
-rc('font', **{'size': 15.0});
-rc('axes', **{'labelsize': 15.0});
-rc('mathtext', **{'fontset':'stixsans'});
-
-import matplotlib.pyplot as plt
 
 import os,sys, argparse
 from netCDF4 import Dataset
@@ -38,28 +21,50 @@ def repNaN2None(arr):
 parser = argparse.ArgumentParser()
 parser.add_argument('--folder', nargs='+')
 parser.add_argument('--legend', nargs='*')
+parser.add_argument('--title', type=str, nargs='*', default=None)
 parser.add_argument('--colors', nargs='*')
 parser.add_argument('--auto-color', action="store_true")
+parser.add_argument('--no-legend', action="store_true")
 parser.add_argument('--output-bifur', default="")
 parser.add_argument('--output-marks', default="")
 parser.add_argument('--offset-marks', type=float, default=0)
-parser.add_argument('--gamma-rng', nargs=2, type=float, default=[np.nan, np.nan])
-parser.add_argument('--psi-fixed-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--legend-loc', type=str, default="best")
+parser.add_argument('--varnames', type=str, nargs="+", required=True)
+parser.add_argument('--param', type=str, choices=["gamma", "xi"])
+parser.add_argument('--param-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--mode1-psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--s1000-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ns-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ew-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--cvt_e-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--cvt_w-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--coe-gamma-xi', type=float, default=9.57e-19)
 parser.add_argument('--marks', nargs='*', type=float, default=[])
 parser.add_argument('--marks-pos', nargs='*', type=str, default=[])
+parser.add_argument('--mark-labels', nargs='*', type=str, default=[])
+parser.add_argument('--mark-sides', nargs='*', type=str, default=[], choices=["R", "L"])
 parser.add_argument('--residue-threshold', type=float, default=1e-12)
+parser.add_argument('--no-display', action="store_true")
+parser.add_argument('--ncol', type=int, default=1)
+parser.add_argument('--thumbnail-skip', type=int, default=0)
+parser.add_argument('--text', nargs='*', type=str, default=[])
+parser.add_argument('--text-pos', nargs='*', type=float, default=[])
+parser.add_argument('--text-ax', nargs='*', type=int, help="Specify which axes to put text", default=[])
+parser.add_argument('--put-var-on-yaxis', action="store_true")
+parser.add_argument('--const-A', type=float, help="Const A", required=True)
+parser.add_argument('--const-C', type=float, help="Const C", required=True)
+parser.add_argument('--const-tau', type=float, help="Const tau", required=True)
+parser.add_argument('--const-beta', type=float, help="Const beta", required=True)
+
+
 args = parser.parse_args()
 
 pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(args)
 
-repNaN2None(args.gamma_rng)
-repNaN2None(args.psi_fixed_rng)
+repNaN2None(args.param_rng)
+repNaN2None(args.psi_rng)
 repNaN2None(args.s1000_rng)
 repNaN2None(args.db_ns_rng)
 repNaN2None(args.db_ew_rng)
@@ -69,20 +74,42 @@ repNaN2None(args.cvt_e_rng)
 data = []
 coor = {}
 
-yvars = ["Psib", "s1000", "db_ns", "db_ew"]
+#target_vars = ["mode1_psi", "mode1_db_ew", "mode1_s", "mode1_chi", "mode1_dq", "mode1_chi_dbdz"]
+#target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff", "mode1_dq"]
+target_vars = args.varnames
+#["mode1_psi", "mode1_chi_dbdz", "mode1_dq",]# "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff",]
 
 folders = args.folder
 legends   = args.legend
 
-if (legends is None) or (legends is not None and len(legends) < len(folders)):
-    print("Legends do not have the same length of folders. Use numbering instead")
-    legends = ["%d" % (i,) for i in range(len(folders))]
+if args.no_legend:
+    print("The flag `--no-legend ` is set.")
+else:
+    if (legends is None) or (legends is not None and len(legends) < len(folders)):
+        print("Legends do not have the same length of folders. Use numbering instead")
+        legends = ["%d" % (i,) for i in range(len(folders))]
 
-print("Legends are")
-print(legends)
+    print("Legends are")
+    print(legends)
 
 if len(args.marks) % 2 != 0:
     raise Exception("Length of mark is not multiple of 2. It has to be a list of (x, y) pairs. ")
+
+if len(args.text_pos) != 2*len(args.text):
+    raise Exception("Length of `--text-pos` does not match length of `--text` * 2. ")
+
+if len(args.text_ax) != len(args.text):
+    raise Exception("Length of `--text-ax` does not match length of `--text`. ")
+
+
+#
+if args.param == "gamma":
+    print("Using freshwater forcing as bifurcation parameter.")
+    param = "Q"
+
+elif args.param == "xi":
+    print("Using zonal asymmetry as bifurcation parameter.")
+    param = "xi"
 
 
 # Data contains a list of folders (cases)
@@ -90,29 +117,33 @@ if len(args.marks) % 2 != 0:
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Psib", "chi", "Q", "be", "bw", "res", "stable"]
+loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable", "ui"]
 for i, folder in enumerate(folders):
 
     print("Loading the folder: %s" % (folder,))
 
-    _data, _coor = lsd.loadScanData(folder, loaded_varnames, load_coor=(coor is None))
-
     try:
-        _data, _coor = lsd.loadScanData(folder, loaded_varnames, load_coor=(coor is None))
+        _data, _coor = lsd.loadScanData(
+            folder,
+            loaded_varnames,
+            load_coor=(coor is None), 
+            residue_threshold = args.residue_threshold,
+        )
     except Exception as e:
         print("Error occurs. Skip this one.")
         data_to_delete.append(i)
         data.append(None)
         continue
  
-    print("Number of records: %d" % (len(_data["Q"]))) 
+    print("Number of records: %d" % (len(_data[param]))) 
     if coor is None:
         coor = _coor
 
-    med.makeExtendedData(_data, coor)
+    med.makeExtendedData(_data, coor, beta=args.const_beta)
 
     data.append(_data)
-
+    #print("mode1_dq = ", _data["mode1_dq"])
+    
 data_to_delete.reverse() # important. delete from last to first to avoid reordering
 print("Delete index: ", data_to_delete)
 
@@ -121,25 +152,24 @@ for rm_idx in data_to_delete:
     del data[rm_idx]
     del legends[rm_idx]
 
-# remove data points that is not converging
-for d in data:
-    for v in yvars:
-        d[v][d["res"] > args.residue_threshold] = np.nan
+    
+const_tau_over_A = args.const_tau / args.const_A
 
 for d in data:
-    
-    d["Q"] /= 1e6
-    d["Psib"] /= 1e6
-    d["db_ns"] *= 1e3
-    d["db_ew"] *= 1e3
-    d["s1000"] *= 1e5
-    d["s1000_hlat"] *= 1e5
+   
+    if param == "Q": 
+        d[param] /= 1e6
+
+    d["mode1_chi"] /= (1e6 * 1e-6)  # per Sv  and per 1000 km
+    d["mode1_psi"] /= 1e6 
+    d["mode1_chi_dbdz"] *= const_tau_over_A / 1e6
+    d["mode1_dq"] *= const_tau_over_A / 1e6
+    d["mode1_ui_adv"] *= const_tau_over_A / 1e6
+    d["mode1_ZOC"] *= const_tau_over_A / 1e6
 
     y_ind = np.argmin(np.abs(coor["y_T"] - 60.0))
     z_ind = np.argmin(np.abs(coor["z_W"] - 1000.0))
 
-    print("z_ind = %d, y_ind = %d" % (z_ind, y_ind)) 
-    d["psi_fixed"] = d["Psib"][:, y_ind, z_ind] 
 
 # Pick out the marks
 def dist(x1,y1,x2,y2):
@@ -150,10 +180,10 @@ shortest_dist = np.zeros((nmarkpairs,)) + 1e5
 mark_index = np.zeros((nmarkpairs, 2), dtype=int) - 1
         
 for k in range(nmarkpairs):
-    print("Search for the marker case closest to : (gamma, psi) = (%f, %f)" % (args.marks[k*2], args.marks[k*2+1]))
+    print("Search for the marker case closest to : (%s, psi) = (%f, %f)" % (param, args.marks[k*2], args.marks[k*2+1]))
     for i, d in enumerate(data):
-        for s in range(len(d["Q"])):
-            _dist = dist(d["Q"][s]*10, d["psi_fixed"][s], args.marks[k*2]*10, args.marks[k*2+1])
+        for s in range(len(d[param])):
+            _dist = dist(d[param][s]*10, d["mode1_psi"][s], args.marks[k*2]*10, args.marks[k*2+1])
             if _dist < shortest_dist[k]:
                 shortest_dist[k] = _dist
                 mark_index[k, 0] = i
@@ -163,11 +193,56 @@ for k in range(nmarkpairs):
 
 
 
+          
+print("Data loaded. Plotting now...")
+
+import tool_fig_config
+
+print("Loading matplotlib...")
+import matplotlib as mplt
+
+if args.no_display:
+    print("`--no-display` is set.")
+    mplt.use("Agg")
+
+else:
+    print("`--no-display` is not set. Will show figures...")
+    mplt.use("TkAgg")
+
+import matplotlib.pyplot as plt
+
+import matplotlib.gridspec as gridspec
+from matplotlib import cm
+from matplotlib import rc
+
+import colorblind
+print("Done")
+mplt.rcParams['lines.linewidth'] =   default_linewidth;
+mplt.rcParams['axes.linewidth'] =    default_linewidth;
+mplt.rcParams['xtick.major.size'] =  default_ticksize;
+mplt.rcParams['xtick.major.width'] = default_linewidth;
+mplt.rcParams['ytick.major.size'] =  default_ticksize;
+mplt.rcParams['ytick.major.width'] = default_linewidth;
+
+rc('font', **{'size': 15.0});
+rc('axes', **{'labelsize': 15.0});
+rc('mathtext', **{'fontset':'stixsans'});
+
 if args.auto_color:
 
     print("Option --auto-color is on. Use self-generated colors.")
-    cmap = plt.cm.get_cmap("Set1", len(legends))
-    colors = [ cmap(i) for i in range(len(legends)) ]
+    #cmap = plt.cm.get_cmap("cmo.phase", len(legends))
+    cmap = mplt.colors.LinearSegmentedColormap.from_list('my_cmap', [
+        '#0072B2', '#009E73', '#D55E00', '#CC79A7', '#F0E442'
+#        (255, 0, 0),
+#        colorblind.BW8color["vermillion"],
+#        colorblind.BW8color["orange"],
+#        colorblind.BW8color["reddishpurple"],
+#        colorblind.BW8color["skyblue"],
+#        colorblind.BW8color["blue"],
+    ])
+    
+    colors = [ cmap(i/len(args.folder)) for i in range(len(args.folder)) ]
     
 else:
 
@@ -191,21 +266,46 @@ else:
 
         if len(colors) < len(legends):
             raise Exception("Colors provided have to be more than number of legends")
-                   
-print("Data loaded. Plotting now...")
+         
 
-plot_z_W = coor["z_W"] / 1e3
-plot_z_T = coor["z_T"] / 1e3
+plot_z_W = - coor["z_W"] / 1e3
+plot_z_T = - coor["z_T"] / 1e3
 
-fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
+ncol = args.ncol
+nrow = int(np.ceil(len(target_vars) / ncol)) 
 
-ax_flat = ax.flatten(order='F')
+figsize, gridspec_kw = tool_fig_config.calFigParams(
+    w = 4,
+    h = 4,
+    wspace = 1.0,
+    hspace = 1.5,
+    w_left = 1.0,
+    w_right = 1.0,
+    h_bottom = 1.0,
+    h_top = 1.0,
+    ncol = ncol,
+    nrow = nrow,
+)
+
+fig, ax = plt.subplots(
+    nrow, ncol,
+    figsize=figsize,
+    subplot_kw=dict(aspect="auto"),
+    gridspec_kw=gridspec_kw,
+    constrained_layout=False,
+    squeeze=False,
+    sharex=False,
+)
+
+#fig, ax = plt.subplots(2, 3, figsize=(12, 8), squeeze=False, constrained_layout=True)
+
+ax_flat = ax.flatten(order='C')
        
-target_vars = ["psi_fixed", "db_ew", "s1000", "db_ns", "cvt_e", "cvt_w"]
 
-for i in range(len(legends)):
+
+for i in range(len(args.folder)):
     
-    print("Plotting %s (%s)" % (legends[i], folders[i]))
+    print("Plotting %s" % (folders[i]))
 
     d = data[i]
     offset = 0
@@ -216,12 +316,13 @@ for i in range(len(legends)):
         
         rng = rngs[j]
 
-        x   = d["Q"][rng]
+        x   = d[param][rng]
         res = d["res"][rng]
 
 
         for k, var in enumerate(target_vars):
-    
+           
+            #print(var, "=", d[var]) 
             y   = d[var][rng]
 
             linestyle = "solid" if val == 1.0 else "dashed"
@@ -230,10 +331,21 @@ for i in range(len(legends)):
                 "color" : colors[i],
             }
 
-            if j == 0 and k == 0:
+            if (not args.no_legend) and j == 0 and k == 0:
                 kw_label['label'] = legends[i]
 
             ax_flat[k].plot(x, y, zorder=1, linestyle=linestyle, **kw_label)
+
+
+for k in range(len(args.text)):
+
+    print("Marking the %d-th text." % k)
+    _ax = ax_flat[args.text_ax[k]]
+    x = args.text_pos[2*k+0]
+    y = args.text_pos[2*k+1]
+    s = args.text[k]
+    _ax.text(x, y, s, size=12, va="center", ha="center")
+        
 
 
 
@@ -242,47 +354,94 @@ for k in range(nmarkpairs):
     print(mark_index[k])
     d = data[mark_index[k,0]]
     s = mark_index[k, 1]
-    
-    for l, var in enumerate(target_vars):
-        #ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="yellow", edgecolor="k", zorder=50)
-        ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
-        ax_flat[l].text(d["Q"][s] + args.offset_marks, d[var][s], "123456789"[k], size=12, va="center", ha="left")
 
-ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25)
+    if args.mark_sides[k] == "R":
+        offset_x = args.offset_marks
+        ha = "left"
+    elif args.mark_sides[k] == "L":
+        offset_x = - args.offset_marks
+        ha = "right"
+
+    for l, var in enumerate(target_vars):
+
+
+        #ax_flat[l].scatter(d["Q"][s], d[var][s], s=10, marker="o", c="yellow", edgecolor="k", zorder=50)
+        ax_flat[l].scatter(d[param][s], d[var][s], s=10, marker="o", c="k", edgecolor="k", zorder=50)
+        ax_flat[l].text(d[param][s] + offset_x, d[var][s], args.mark_labels[k], size=12, va="center", ha=ha)
+        
+
+if not args.no_legend:
+    ax[0, 0].legend(fontsize=12, handlelength=1.0, labelspacing=0.25, borderpad=0.2, loc=args.legend_loc)
 
 
 labels = {
-    "psi_fixed"  : r"$\psi$",
-    "s1000"  : r"$s$",
+    "psi_fixed" : r"$\overline{\left\langle\psi\right\rangle}$",
+    "mode1_psi" : r"$\overline{\left\langle\psi\right\rangle}$",
+    "mode1_chi"   : r"$\left\langle\chi\right\rangle$",
+    "mode1_s_eff"  : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle$",
     "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",
-    "db_ns"  : r"$\delta b$",
-    "db_ew"  : r"$b_e^* - b_w^*$",
+    "db_ns"  : r"$\left\langle\partial_y b_e^* \right\rangle$",
+    "mode1_db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
     "cvt_e"  : r"$\tilde{q}_e$",
     "cvt_w"  : r"$\tilde{q}_w$",
+    "d_cvt"  : r"$\Delta \tilde{q}$",
+    "mode1_dq"     : r"$\left\langle \Delta q \right\rangle$",
+    "mode1_chi_dbdz"  : r"$\left\langle\chi \partial_z \overline{b} \right\rangle$",
+    "mode1_chi_dbdz_product"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
+    "mode1_ui_adv"  : r"$\left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
+    "mode1_ZOC"     : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle + \left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
 }
 
 units = {
-    "psi_fixed" : "[Sv]",
-    "s1000"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "psi_fixed"   : "[Sv]",
+    "mode1_chi"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
+    "mode1_psi"     : "[Sv]",
+    "mode1_ui_adv"  : r"[Sv]",
+    "mode1_ZOC"     : r"[Sv]",
+
+    "mode1_s_eff"   : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "s1000_hlat"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
-    "db_ns"  : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
-    "db_ew"  : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
-    "cvt_e"  : r"",
-    "cvt_w"  : r"",
+    "db_ns"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "mode1_db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "cvt_e"       : r"",
+    "cvt_w"       : r"",
+    "d_cvt"       : r"",
+    "mode1_dq"                : r"[ $ \times 10^{-12} \mathrm{m} / \mathrm{s}^{2} $]",
+    "mode1_chi_dbdz"          : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode1_chi_dbdz_product"  : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+
 }
 
 for l, var in enumerate(target_vars):
-    ax_flat[l].set_ylabel("%s" % (units[var],))
+    
+    if args.put_var_on_yaxis:
+        ax_flat[l].set_ylabel("%s %s" % (labels[var], units[var],))
+    else:
+        ax_flat[l].set_ylabel("%s" % (units[var],))
     
     ylim_attr = "%s_rng" % (var,)
     if hasattr(args, ylim_attr):
         ax_flat[l].set_ylim(getattr(args, ylim_attr))
 
-    ax_flat[l].set_xlabel("$\\gamma$ [Sv]")
-    ax_flat[l].set_xlim(args.gamma_rng)
-    ax_flat[l].set_title("(%s) %s" % ("abcdefg"[l], labels[var],))
+    if args.param == "gamma":
+        ax_flat[l].set_xlabel("$\\gamma$ [Sv]")
+    elif args.param == "xi":
+        ax_flat[l].set_xlabel("$\\xi$")
+
+
+    ax_flat[l].set_xlim(args.param_rng)
+
+    if args.title is not None:
+        _title = args.title[l]
+    else:
+        _title = " %s" % (labels[var],)
+
+    ax_flat[l].set_title("(%s)%s" % ("abcdefg"[l+args.thumbnail_skip], _title,))
+
+    ax_flat[l].grid()
 
 if args.output_bifur != "":
+    print("Saving output: ", args.output_bifur)
     fig.savefig(args.output_bifur, dpi=300)
 
 
@@ -318,9 +477,34 @@ if nmarkpairs != 0:
     dwf_color = (0.6, 0.75, 1.0)
 
     b_cmap = "bwr"
-    
-    fig2 = plt.figure(figsize=(4*nmarkpairs+1, 4*3)) 
-    gs0 = gridspec.GridSpec(3, nmarkpairs+1, figure=fig, width_ratios=nmarkpairs * [1] + [0.05], wspace=0.3)
+
+    ncol = nmarkpairs
+    nrow = 3 
+    figsize, gridspec_kw = tool_fig_config.calFigParams(
+        w = 4,
+        h = 4,
+        wspace = 1.0,
+        hspace = 0.7,
+        w_left = 1.0,
+        w_right = 1.0,
+        h_bottom = 1.0,
+        h_top = 1.0,
+        ncol = ncol,
+        nrow = nrow,
+    )
+
+    fig2, ax = plt.subplots(
+        nrow, ncol,
+        figsize=figsize,
+        subplot_kw=dict(aspect="auto"),
+        gridspec_kw=gridspec_kw,
+        constrained_layout=False,
+        squeeze=False,
+        sharex=False,
+    )
+   
+    #fig2 = plt.figure(figsize=(4*nmarkpairs+1, 4*3)) 
+    #gs0 = gridspec.GridSpec(3, nmarkpairs+1, figure=fig, width_ratios=nmarkpairs * [1] + [0.05], wspace=0.3)
     #fig2, ax2 = plt.subplots(3, nmarkpairs, sharey=False, sharex=True, figsize=(4*nmarkpairs, 4*3), gridspec_kw={'bottom':0.2}, squeeze=False) 
  
     for k in range(nmarkpairs):
@@ -329,7 +513,8 @@ if nmarkpairs != 0:
         d = data[mark_index[k,0]]
         s = mark_index[k, 1]
     
-        _ax = [ fig2.add_subplot(gs0[i, k]) for i in range(3) ]
+        #_ax = [ fig2.add_subplot(gs0[i, k]) for i in range(3) ]
+        _ax = ax[:, k]#[ fig2.add_subplot(gs0[i, k]) for i in range(3) ]
       
         be_plot = ( d["be"][s, :, :].transpose() - b_neworigin ) * b_factor 
         bw_plot = ( d["bw_bnd"][s, :, :].transpose() - b_neworigin ) * b_factor 
@@ -367,7 +552,10 @@ if nmarkpairs != 0:
  
 
 
-        _ax[0].set_title("State %s ($%.2f \\, \\mathrm{Sv}$)" % ("123456789"[k], d["Q"][s]))
+        if param == "Q":
+            _ax[0].set_title("State %s ($%.2f \\, \\mathrm{Sv}$)" % ("123456789"[k], d[param][s]))
+        elif param == "xi":
+            _ax[0].set_title("State %s ($%.2f$)" % ("123456789"[k], d[param][s]))
 
         if k == 0:
             for __ax in _ax:
@@ -387,18 +575,18 @@ if nmarkpairs != 0:
         if k != 0:
             __ax.set_yticklabels([""] * len(__ax.get_yticks()))
 
-        _ax[0].set_ylim([4.5, 0])
-        _ax[1].set_ylim([1, 0])
-        _ax[2].set_ylim([1, 0])
+        #_ax[0].set_ylim([4.5, 0])
+        #_ax[1].set_ylim([1, 0])
+        #_ax[2].set_ylim([1, 0])
 
         
-    cax = fig2.add_subplot(gs0[:, -1])
-    plt.colorbar(mappable=b_mappable, cax=cax, cmap=b_cmap, orientation="vertical", ticks=[], label="$b_w^*$ and $b_e^*$ [$\\mathrm{m}^2 / \\mathrm{s}$]")
+    #cax = fig2.add_subplot(gs0[:, -1])
+    #plt.colorbar(mappable=b_mappable, cax=cax, cmap=b_cmap, orientation="vertical", ticks=[], label="$b_w^*$ and $b_e^*$ [$\\mathrm{m}^2 / \\mathrm{s}$]")
     
     if args.output_marks != "":
         fig2.savefig(args.output_marks, dpi=300)
 
-
-
-plt.show()
+if not args.no_display:
+    print("Showing figures...")
+    plt.show()
 

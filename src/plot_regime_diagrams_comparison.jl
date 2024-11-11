@@ -108,9 +108,12 @@ H = 4500.0
 a = 6.4e6
 α_T = 2e-3
 α_S = 7e-3
+
+# divided by 2 is important
 full_V   = ((60 / 360) * 2π * H * a^2 * (sin(deg2rad(ϕn)) - sin(deg2rad(ϕs))) / 2)
 V        = full_V  *  (500/H) * (5/60)
 
+println("full_V = ", full_V)
 println("V / full_V = ", V / full_V)
 
 δT_star = 25.0

@@ -4,7 +4,7 @@
 
 
 
-function detectRanges(arr)
+function detectRanges(arr, include_prev=True)
 
     vals = []
     rngs = []
@@ -14,6 +14,10 @@ function detectRanges(arr)
     new_rng = true
     beg_i = 1
     detect_val = 0.0
+
+    extra_include = 0
+    if include_prev:
+        extra_include = -1
 
     for i in 1:N
     
@@ -33,9 +37,9 @@ function detectRanges(arr)
             push!(vals, detect_val)
 
             if new_rng
-                push!(rngs, beg_i:i-1)
+                push!(rngs, beg_i+extra_include:i-1)
             elseif i == N
-                push!(rngs, beg_i:i)
+                push!(rngs, beg_i+extra_include:i)
             end
 
             beg_i = i

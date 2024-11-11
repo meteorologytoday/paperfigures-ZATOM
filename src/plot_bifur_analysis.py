@@ -52,6 +52,11 @@ parser.add_argument('--text', nargs='*', type=str, default=[])
 parser.add_argument('--text-pos', nargs='*', type=float, default=[])
 parser.add_argument('--text-ax', nargs='*', type=int, help="Specify which axes to put text", default=[])
 parser.add_argument('--put-var-on-yaxis', action="store_true")
+parser.add_argument('--const-A', type=float, help="Const A", required=True)
+parser.add_argument('--const-C', type=float, help="Const C", required=True)
+parser.add_argument('--const-tau', type=float, help="Const tau", required=True)
+parser.add_argument('--const-beta', type=float, help="Const beta", required=True)
+
 
 args = parser.parse_args()
 
@@ -112,15 +117,18 @@ elif args.param == "xi":
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable"]
+loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable", "ui"]
 for i, folder in enumerate(folders):
 
     print("Loading the folder: %s" % (folder,))
 
-    _data, _coor = lsd.loadScanData(folder, loaded_varnames, load_coor=(coor is None))
-
     try:
-        _data, _coor = lsd.loadScanData(folder, loaded_varnames, load_coor=(coor is None))
+        _data, _coor = lsd.loadScanData(
+            folder,
+            loaded_varnames,
+            load_coor=(coor is None), 
+            residue_threshold = args.residue_threshold,
+        )
     except Exception as e:
         print("Error occurs. Skip this one.")
         data_to_delete.append(i)
@@ -131,10 +139,11 @@ for i, folder in enumerate(folders):
     if coor is None:
         coor = _coor
 
-    med.makeExtendedData(_data, coor)
+    med.makeExtendedData(_data, coor, beta=args.const_beta)
 
     data.append(_data)
-
+    #print("mode1_dq = ", _data["mode1_dq"])
+    
 data_to_delete.reverse() # important. delete from last to first to avoid reordering
 print("Delete index: ", data_to_delete)
 
@@ -143,6 +152,8 @@ for rm_idx in data_to_delete:
     del data[rm_idx]
     del legends[rm_idx]
 
+    
+const_tau_over_A = args.const_tau / args.const_A
 
 for d in data:
    
@@ -151,32 +162,13 @@ for d in data:
 
     d["mode1_chi"] /= (1e6 * 1e-6)  # per Sv  and per 1000 km
     d["mode1_psi"] /= 1e6 
-    d["Psib"] /= 1e6
-    #d["db_ns"] *= 1e3
-    d["mode1_db_ew"] *= 1e3
-    d["mode1_s_eff"] *= 1e7
-    d["mode1_chi_dbdz"] *= 1e12
-    d["mode1_chi_dbdz_product"] *= 1e12
-    d["mode1_dq"] *= 1e12
-    #d["s1000_hlat"] *= 1e5
+    d["mode1_chi_dbdz"] *= const_tau_over_A / 1e6
+    d["mode1_dq"] *= const_tau_over_A / 1e6
+    d["mode1_ui_adv"] *= const_tau_over_A / 1e6
+    d["mode1_ZOC"] *= const_tau_over_A / 1e6
 
     y_ind = np.argmin(np.abs(coor["y_T"] - 60.0))
     z_ind = np.argmin(np.abs(coor["z_W"] - 1000.0))
-
-    print("z_ind = %d, y_ind = %d" % (z_ind, y_ind)) 
-    #d["psi_fixed"] = d["Psib"][:, y_ind, z_ind] 
-
-# remove data points that is not converging
-for d in data:
-    nan_idx = d["res"] > args.residue_threshold
-    d[param][nan_idx] = np.nan
-#    d["Q"][d["Q"] < 0.075] = np.nan
-
-    if args.param_rng[1] is not None:
-        d[param][d[param] > args.param_rng[1]] = np.nan
-        for v in target_vars:
-            d[v][nan_idx] = np.nan
-     
 
 
 # Pick out the marks
@@ -329,7 +321,8 @@ for i in range(len(args.folder)):
 
 
         for k, var in enumerate(target_vars):
-    
+           
+            #print(var, "=", d[var]) 
             y   = d[var][rng]
 
             linestyle = "solid" if val == 1.0 else "dashed"
@@ -395,22 +388,28 @@ labels = {
     "mode1_dq"     : r"$\left\langle \Delta q \right\rangle$",
     "mode1_chi_dbdz"  : r"$\left\langle\chi \partial_z \overline{b} \right\rangle$",
     "mode1_chi_dbdz_product"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
+    "mode1_ui_adv"  : r"$\left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
+    "mode1_ZOC"     : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle + \left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
 }
 
 units = {
     "psi_fixed"   : "[Sv]",
     "mode1_chi"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
     "mode1_psi"     : "[Sv]",
-    "mode1_s_eff"       : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "mode1_ui_adv"  : r"[Sv]",
+    "mode1_ZOC"     : r"[Sv]",
+
+    "mode1_s_eff"   : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "s1000_hlat"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "db_ns"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
     "mode1_db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
     "cvt_e"       : r"",
     "cvt_w"       : r"",
     "d_cvt"       : r"",
-    "mode1_dq"          : r"[ $ \times 10^{-12} \mathrm{m} / \mathrm{s}^{2} $]",
-    "mode1_chi_dbdz"    : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
-    "mode1_chi_dbdz_product"    : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode1_dq"                : r"[ $ \times 10^{-12} \mathrm{m} / \mathrm{s}^{2} $]",
+    "mode1_chi_dbdz"          : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode1_chi_dbdz_product"  : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+
 }
 
 for l, var in enumerate(target_vars):

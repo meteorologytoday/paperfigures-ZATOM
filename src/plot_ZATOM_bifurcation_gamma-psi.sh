@@ -16,7 +16,7 @@ python3 src/plot_bifur_analysis.py --folder \
     --cvt_e-rng -0.01 0.2    \
     --cvt_w-rng -0.01 0.2    \
     --offset-marks 0.005 \
-    --varnames "mode1_psi" "mode1_chi_dbdz" "mode1_dq" \
+    --varnames "mode1_psi" "mode1_ZOC" "mode1_dq" "mode1_chi_dbdz" "mode1_ui_adv" \
     --output-bifur "figures/ZATOM_bifur_analysis_xi.svg" \
     --marks  0.0826     2.37   \
              0.04583    1.547  \
@@ -25,6 +25,9 @@ python3 src/plot_bifur_analysis.py --folder \
     --output-marks "figures/ZATOM_bifur_analysis_xi_marks.svg" \
     --residue-threshold 3e-10 \
     --legend-loc "center right" \
-    --ncol 3 \
-    --no-display
+    --ncol 5 \
+    --const-A 1.35e-11 \
+    --const-C 9.57e-19 \
+    --const-beta 0.8 \
+    --const-tau  $(( 86400 * 864 )) 
 
