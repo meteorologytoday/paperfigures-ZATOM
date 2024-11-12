@@ -63,12 +63,13 @@ name_pairs=(
     model_physics.svg                             fig01
     model.svg                                     fig02
     merged-forcing.svg                            fig03
-    ZATOM_bifur_analysis_xi.svg                   fig04
+    ZATOM_bifur_diag_xi-440.svg                   fig04
     ZATOM_state_diff.svg                          fig05
-    merged-ZATOM_dense_bifur.svg                  fig06
-    merged-etb_dydt.svg                           fig07
-    merged-stommel_bifurcation_analytical.svg     fig08
-    regime_diagrams_comparison.svg                fig09
+    ZATOM_bifur_diag_xi-400.svg                   fig06
+    merged-ZATOM_dense_bifur.svg                  fig07
+    merged-etb_dydt.svg                           fig08
+    merged-stommel_bifurcation_analytical.svg     fig09
+    regime_diagrams_comparison.svg                fig10
 #    ZATOM_bifur_gamma_xi.png                      fig08
 
 #    figure-etb_bifur_phase.png                    fig10

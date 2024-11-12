@@ -7,6 +7,7 @@ necessary_variables = [
     "X_ADV_ZOC_",
     "X_VDIFU_",
     "X_HDIFU_",
+    "X_ZNLHDIFU_",
     "X_CVA_",
     "X_FRC_",
     "X_SS_",
@@ -159,6 +160,7 @@ def makeExtendedData(data, coor, lat_s = 40.0, lat_n = 68.0, verbose = False, me
         "FRC",
         "VDIFU",
         "HDIFU",
+        "ZNLHDIFU",
         "CVA",
     ]:
         varname = "X_%s_" % (component,)
@@ -187,7 +189,7 @@ def makeExtendedData(data, coor, lat_s = 40.0, lat_n = 68.0, verbose = False, me
         + new_data["mode_dbdiffdt_dueto_ADV_MOC"]
     )
  
-    new_data["mode_dbdiffdt_dueto_DIFU"] = (
+    new_data["mode_dbdiffdt_dueto_BGDIFU"] = (
           new_data["mode_dbdiffdt_dueto_VDIFU"]
         + new_data["mode_dbdiffdt_dueto_HDIFU"]
     )
@@ -200,7 +202,102 @@ def makeExtendedData(data, coor, lat_s = 40.0, lat_n = 68.0, verbose = False, me
         + new_data["mode_dbdiffdt_dueto_FRC"]
         + new_data["mode_dbdiffdt_dueto_VDIFU"]
         + new_data["mode_dbdiffdt_dueto_HDIFU"]
+        + new_data["mode_dbdiffdt_dueto_ZNLHDIFU"]
     )
+
+
+
+    # Diagnose chi tendency
+    f_Tm2 = 2 * omega * coor["sin_lat_T"][1:-1]
+    f_Tm2 = f_Tm2[None, :] # (s, y)
+    invf_Tm2 = f_Tm2**(-1)
+    _const = (H / (mode * np.pi))**2.0
+    dy_Vm2 = coor["dy_V"][None, 1:-1, None] * R_earth # Transform into meters
+    wgt_cos_lat_Tm2 = wgt_cos_lat_T[1:-1]
+    def X2dbdy(varname, x_idx):
+        var_data = data[varname]
+        var_TEMP = var_data[:, 0, x_idx, :, :]
+        var_SALT = var_data[:, 1, x_idx, :, :]
+ 
+        b_dueto_TEMP = TS2b( var_TEMP, 0.0 )
+        b_dueto_SALT = TS2b( 0.0, var_SALT )
+
+
+        # Take y-derivative
+        dbdy_dueto_TEMP = ( b_dueto_TEMP[:, 1:, :] - b_dueto_TEMP[:, :-1, :] ) / dy_Vm2
+        dbdy_dueto_SALT = ( b_dueto_SALT[:, 1:, :] - b_dueto_SALT[:, :-1, :] ) / dy_Vm2
+        
+        # On Tm2 grid
+        dbdy_dueto_TEMP = (dbdy_dueto_TEMP[:, 1:, :] + dbdy_dueto_TEMP[:, :-1, :] ) / 2.0
+        dbdy_dueto_SALT = (dbdy_dueto_SALT[:, 1:, :] + dbdy_dueto_SALT[:, :-1, :] ) / 2.0
+        
+
+        dbdy_dueto_TEMP = _const * yavg(
+            invf_Tm2 * mode_integration(
+                dbdy_dueto_TEMP,
+                wgt = wgt_mode_dz_T,
+            ),
+            wgt = wgt_cos_lat_Tm2,
+        )
+ 
+        dbdy_dueto_SALT = _const * yavg(
+            invf_Tm2 * mode_integration(
+                dbdy_dueto_SALT,
+                wgt = wgt_mode_dz_T,
+            ),
+            wgt = wgt_cos_lat_Tm2,
+        )
+        
+        return dict(
+            TEMP = dbdy_dueto_TEMP,
+            SALT = dbdy_dueto_SALT,
+        ) 
+
+
+    for component in [
+        "ADV_MOC",
+        "ADV_ZOC",
+        "SS",
+        "FRC",
+        "VDIFU",
+        "HDIFU",
+        "ZNLHDIFU",
+        "CVA",
+    ]:
+        varname = "X_%s_" % (component,)
+        
+        new_varname_ttl = "mode_dchidt_dueto_%s" % (component,)
+        new_varname_TEMP = "mode_dchidt_dueto_%s_TEMP" % (component,)
+        new_varname_SALT = "mode_dchidt_dueto_%s_SALT" % (component,)
+
+        tmp = X2dbdy(varname, x_idx=1) # Eastern part
+        new_data[new_varname_TEMP] = tmp["TEMP"]
+        new_data[new_varname_SALT] = tmp["SALT"]
+        new_data[new_varname_ttl]  = tmp["TEMP"] + tmp["SALT"]
+
+
+    new_data["mode_dchidt_dueto_ADV_ZOCMOC"] = (
+          new_data["mode_dchidt_dueto_ADV_ZOC"]
+        + new_data["mode_dchidt_dueto_ADV_MOC"]
+    )
+ 
+    new_data["mode_dchidt_dueto_BGDIFU"] = (
+          new_data["mode_dchidt_dueto_VDIFU"]
+        + new_data["mode_dchidt_dueto_HDIFU"]
+    )
+    
+    new_data["mode_dchidt_sum"] = (
+          new_data["mode_dchidt_dueto_ADV_ZOC"]
+        + new_data["mode_dchidt_dueto_ADV_MOC"]
+        + new_data["mode_dchidt_dueto_CVA"]
+        + new_data["mode_dchidt_dueto_SS"]
+        + new_data["mode_dchidt_dueto_FRC"]
+        + new_data["mode_dchidt_dueto_VDIFU"]
+        + new_data["mode_dchidt_dueto_HDIFU"]
+        + new_data["mode_dchidt_dueto_ZNLHDIFU"]
+    )
+
+
 
     new_data["mode_chi"] = yavg(
         mode_integration(

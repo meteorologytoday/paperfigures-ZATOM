@@ -5,7 +5,8 @@ source 98_trapkill.sh
 
 plot_codes=(
     $jl $src_dir/plot_forcing.jl
-    $bs $src_dir/plot_ZATOM_bifurcation_gamma-psi.sh
+#    $bs $src_dir/plot_ZATOM_bifurcation_gamma-psi.sh
+    $bs $src_dir/plot_ZATOM_bifurcation_diag.sh
     $bs $src_dir/plot_ZATOM_bifurcation_dense_xi-psi.sh
     $bs $src_dir/plot_ZATOM_bifurcation_dense_gamma-psi.sh
     $bs $src_dir/plot_ZATOM_diff.sh

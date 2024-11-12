@@ -1,5 +1,5 @@
 import load_scan_data as lsd
-import make_extended_data as med
+import make_extended_data_v3 as med
 
 import os
 import re
@@ -40,7 +40,7 @@ folders = args.folder
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Q", "Psib", "chi", "be", "bw", "qw", "qe", "res", "stable"]
+loaded_varnames = ["Q", "Psib", "chi", "be", "bw", "qw", "qe", "res", "stable"] + med.necessary_variables
 
 for i, folder in enumerate(folders):
 
