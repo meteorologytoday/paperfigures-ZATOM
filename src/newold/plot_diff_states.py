@@ -128,8 +128,8 @@ rc('mathtext', **{'fontset':'stixsans'});
 
 
 
-plot_z_W = - coor["z_W"] / 1e3
-plot_z_T = - coor["z_T"] / 1e3
+plot_z_W = - coor["z_W"] 
+plot_z_T = - coor["z_T"] 
 
 ncol = 2
 nrow = 1

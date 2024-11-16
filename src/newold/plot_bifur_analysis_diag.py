@@ -301,14 +301,13 @@ print("Done")
 
 colors = [
     'black',
-    'red',
-    "bluishgreen",
-    'vermillion',
     'orange',
-    "blue",
-    'reddishpurple',
     'skyblue',
+    "bluishgreen",
     'yellow',
+    "blue",
+    'vermillion',
+    'reddishpurple',
 ]
 
 
@@ -409,6 +408,7 @@ if not args.dont_plot_psi:
         _ax.scatter(subset_param, subset_psi, s=10, c="black", marker="o")
         _ax.text(subset_param + offset_x, subset_psi, args.labels[k], size=12, va="center", ha=ha)
         
+    _ax.set_axisbelow(True)
     _ax.grid()
     _ax.set_ylabel("[Sv]")
     
@@ -423,19 +423,19 @@ if not args.dont_plot_dpsidt_decomp:
     factor = 86400*360*1 * 1e-6 # Sv per year
 
     _ax = ax_flat[ax_idx] ; ax_idx += 1
-    for i, (varname_suffix, tendency_name) in enumerate([
-        ("ADV_ZOC", "ZOCA"), 
-        ("ADV_MOC", "MOCA"), 
-        ("SS", "FWF"),
-        ("FRC", "TFRC"),
-        ("BGDIFU", "BGDF"),
-        ("ZNLHDIFU", "BDYDF"),
-        ("CVA", "CVA"),
+    for i, (varname_suffix, tendency_name, colorname) in enumerate([
+        ("ADV_ZOC", "ZOCA", "black"), 
+        ("ADV_MOC", "MOCA", "orange"), 
+        ("SS", "FWF", "skyblue"),
+        ("FRC", "TFRC", "bluishgreen"),
+        ("BGDIFU", "BGDF", "yellow"),
+        ("ZNLHDIFU", "BDYDF", "vermillion"),
+        ("CVA", "CVA", "reddishpurple"),
     #    "mode_dbdiffdt_sum",
     ]):
         varname = "mode_dbdiffdt_dueto_%s" % (varname_suffix,)
         label = r"$ \dot{\tilde{\psi}^{%d}}_{\mathrm{%s}}$" % (args.mode, tendency_name)
-        color = colorblind.BW8color[colorname] if (colorname := colors[i]) in colorblind.BW8color else colorname
+        color = colorblind.BW8color[colorname] if colorname in colorblind.BW8color else colorname
         for j, val in enumerate(vals):
             
             rng = rngs[j]
@@ -463,6 +463,7 @@ if not args.dont_plot_dpsidt_decomp:
     #_trans = mplt.transforms.blended_transform_factory(_ax.transData, _ax.transAxes)
     #for i, _s in enumerate(subset_s):
     #    _ax.plot([_s, _s], [0, 1],color="gray", linestyle="solid", transform=_trans)
+    _ax.set_axisbelow(True)
     _ax.grid()
     _ax.legend(bbox_to_anchor=(1.02, 1.0), ncol=1, loc='upper left', fontsize=12)
     _ax.set_ylabel("[$ \\mathrm{Sv} \\cdot \\mathrm{year}^{-1}$]")
@@ -535,6 +536,7 @@ if not args.dont_plot_chi:
     #    _ax.plot([_s, _s], [0, 1],color="gray", linestyle="solid", transform=_trans)
 
     #_ax.legend()
+    _ax.set_axisbelow(True)
     _ax.grid()
 
     _ax.set_title("(%s) $ \\left\\langle \\chi \\right\\rangle$ " % (args.thumbnail_numbering[ax_idx-1],))
@@ -552,20 +554,19 @@ if not args.dont_plot_dchidt_decomp:
     factor = 86400*360*1 * 1e-6 * 1e6 # Sv per year per 1000km
 
     _ax = ax_flat[ax_idx] ; ax_idx += 1
-    for i, (varname_suffix, tendency_name) in enumerate([
-        ("ADV_ZOC", "ZOCA"), 
-        ("ADV_MOC", "MOCA"), 
-        ("SS", "FWF"),
-        ("FRC", "TFRC"),
-        ("BGDIFU", "BGDF"),
-        ("ZNLHDIFU", "BDYDF"),
-        ("CVA", "CVA"),
-    #    "mode_dbdiffdt_sum",
+    for i, (varname_suffix, tendency_name, colorname) in enumerate([
+        ("ADV_ZOC", "ZOCA", "black"), 
+        ("SS", "FWF", "skyblue"),
+        ("FRC", "TFRC", "bluishgreen"),
+        ("BGDIFU", "BGDF", "yellow"),
+        ("ZNLHDIFU", "BDYDF", "vermillion"),
+        ("CVA", "CVA", "reddishpurple"),
     ]):
+ 
         varname = "mode_dchidt_dueto_%s" % (varname_suffix,)
         label = r"$ \dot{\tilde{\chi}^{%d}}_{\mathrm{%s}}$" % (args.mode, tendency_name)
 
-        color = colorblind.BW8color[colorname] if (colorname := colors[i]) in colorblind.BW8color else colorname
+        color = colorblind.BW8color[colorname] if colorname in colorblind.BW8color else colorname
         for j, val in enumerate(vals):
             
             rng = rngs[j]
@@ -593,6 +594,7 @@ if not args.dont_plot_dchidt_decomp:
     #_trans = mplt.transforms.blended_transform_factory(_ax.transData, _ax.transAxes)
     #for i, _s in enumerate(subset_s):
     #    _ax.plot([_s, _s], [0, 1],color="gray", linestyle="solid", transform=_trans)
+    _ax.set_axisbelow(True)
     _ax.grid()
     _ax.legend(bbox_to_anchor=(1.02, 1.0), ncol=1, loc='upper left', fontsize=12)
     _ax.set_ylabel("[$ \\mathrm{Sv} \\cdot \\mathrm{year}^{-1} \\cdot \\left(1000 \\, \\mathrm{km}\\right)^{-1}$]")
