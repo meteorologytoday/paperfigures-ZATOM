@@ -28,9 +28,12 @@ label_positions = [
 
 
 println("Loading PyPlot")
+println("Setting backend as Agg...")
+ENV["MPLBACKEND"]="agg"
 using PyPlot
 plt = PyPlot
 println("Done")
+
 
 fig, ax = plt.subplots(1, 1, constrained_layout=true)
 
@@ -153,4 +156,4 @@ ax.text(0.05, 0.95, "(b)", size=25, va="top", ha="left", transform=ax.transAxes)
 
 fig.savefig("figures/figure-etb_bifur_xi.svg", dpi=300)
 
-plt.show()
+#plt.show()

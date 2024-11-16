@@ -1,5 +1,5 @@
 import load_scan_data as lsd
-import make_extended_data as med
+import make_extended_data_v3 as med
 
 import os
 import re
@@ -33,7 +33,7 @@ parser.add_argument('--varnames', type=str, nargs="+", required=True)
 parser.add_argument('--param', type=str, choices=["gamma", "xi"])
 parser.add_argument('--param-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
-parser.add_argument('--mode1-psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
+parser.add_argument('--mode-psi-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--s1000-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ns-rng', nargs=2, type=float, default=[np.nan, np.nan])
 parser.add_argument('--db_ew-rng', nargs=2, type=float, default=[np.nan, np.nan])
@@ -52,10 +52,7 @@ parser.add_argument('--text', nargs='*', type=str, default=[])
 parser.add_argument('--text-pos', nargs='*', type=float, default=[])
 parser.add_argument('--text-ax', nargs='*', type=int, help="Specify which axes to put text", default=[])
 parser.add_argument('--put-var-on-yaxis', action="store_true")
-parser.add_argument('--const-A', type=float, help="Const A", required=True)
-parser.add_argument('--const-C', type=float, help="Const C", required=True)
-parser.add_argument('--const-tau', type=float, help="Const tau", required=True)
-parser.add_argument('--const-beta', type=float, help="Const beta", required=True)
+parser.add_argument('--mode', type=int, help="Mode to compute.", default=1)
 
 
 args = parser.parse_args()
@@ -74,10 +71,11 @@ repNaN2None(args.cvt_e_rng)
 data = []
 coor = {}
 
-#target_vars = ["mode1_psi", "mode1_db_ew", "mode1_s", "mode1_chi", "mode1_dq", "mode1_chi_dbdz"]
-#target_vars = ["mode1_psi", "mode1_chi_dbdz", "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff", "mode1_dq"]
-target_vars = args.varnames
-#["mode1_psi", "mode1_chi_dbdz", "mode1_dq",]# "mode1_chi_dbdz_product", "mode1_chi", "mode1_s_eff",]
+#target_vars = ["mode_psi", "mode_db_ew", "mode_s", "mode_chi", "mode_dq", "mode_chi_dbdz"]
+#target_vars = ["mode_psi", "mode_chi_dbdz", "mode_chi_dbdz_product", "mode_chi", "mode_s_eff", "mode_dq"]
+target_vars = args.varnames 
+
+#["mode_psi", "mode_chi_dbdz", "mode_dq",]# "mode_chi_dbdz_product", "mode_chi", "mode_s_eff",]
 
 folders = args.folder
 legends   = args.legend
@@ -117,7 +115,7 @@ elif args.param == "xi":
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable", "ui"]
+loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable", "ui"] + med.necessary_variables
 for i, folder in enumerate(folders):
 
     print("Loading the folder: %s" % (folder,))
@@ -139,10 +137,10 @@ for i, folder in enumerate(folders):
     if coor is None:
         coor = _coor
 
-    med.makeExtendedData(_data, coor, beta=args.const_beta)
+    med.makeExtendedData(_data, coor, lat_s=40.0, lat_n=70.0, merge=True, verbose=True, mode=args.mode)
 
     data.append(_data)
-    #print("mode1_dq = ", _data["mode1_dq"])
+    #print("mode_dq = ", _data["mode_dq"])
     
 data_to_delete.reverse() # important. delete from last to first to avoid reordering
 print("Delete index: ", data_to_delete)
@@ -153,19 +151,12 @@ for rm_idx in data_to_delete:
     del legends[rm_idx]
 
     
-const_tau_over_A = args.const_tau / args.const_A
-
 for d in data:
    
     if param == "Q": 
         d[param] /= 1e6
 
-    d["mode1_chi"] /= (1e6 * 1e-6)  # per Sv  and per 1000 km
-    d["mode1_psi"] /= 1e6 
-    d["mode1_chi_dbdz"] *= const_tau_over_A / 1e6
-    d["mode1_dq"] *= const_tau_over_A / 1e6
-    d["mode1_ui_adv"] *= const_tau_over_A / 1e6
-    d["mode1_ZOC"] *= const_tau_over_A / 1e6
+    d["mode_psi"] /= 1e6 
 
     y_ind = np.argmin(np.abs(coor["y_T"] - 60.0))
     z_ind = np.argmin(np.abs(coor["z_W"] - 1000.0))
@@ -183,7 +174,7 @@ for k in range(nmarkpairs):
     print("Search for the marker case closest to : (%s, psi) = (%f, %f)" % (param, args.marks[k*2], args.marks[k*2+1]))
     for i, d in enumerate(data):
         for s in range(len(d[param])):
-            _dist = dist(d[param][s]*10, d["mode1_psi"][s], args.marks[k*2]*10, args.marks[k*2+1])
+            _dist = dist(d[param][s]*10, d["mode_psi"][s], args.marks[k*2]*10, args.marks[k*2+1])
             if _dist < shortest_dist[k]:
                 shortest_dist[k] = _dist
                 mark_index[k, 0] = i
@@ -376,39 +367,39 @@ if not args.no_legend:
 
 labels = {
     "psi_fixed" : r"$\overline{\left\langle\psi\right\rangle}$",
-    "mode1_psi" : r"$ \left \langle \tilde{\psi}^{1} \right \rangle $",
-    "mode1_chi"   : r"$\left\langle\chi\right\rangle$",
-    "mode1_s_eff"  : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle$",
+    "mode_psi" : r"$ \left \langle \tilde{\psi}^{1} \right \rangle $",
+    "mode_chi"   : r"$\left\langle\chi\right\rangle$",
+    "mode_s_eff"  : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle$",
     "s1000_hlat"  : r"$s_{\mathrm{hlat}}$",
     "db_ns"  : r"$\left\langle\partial_y b_e^* \right\rangle$",
-    "mode1_db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
+    "mode_db_ew"  : r"$\left\langle b_e^* - b_w^* \right\rangle$",
     "cvt_e"  : r"$\tilde{q}_e$",
     "cvt_w"  : r"$\tilde{q}_w$",
     "d_cvt"  : r"$\Delta \tilde{q}$",
-    "mode1_dq"     : r"$\left\langle \Delta q \right\rangle$",
-    "mode1_chi_dbdz"  : r"$\left\langle\chi \partial_z \overline{b} \right\rangle$",
-    "mode1_chi_dbdz_product"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
-    "mode1_ui_adv"  : r"$\left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
-    "mode1_ZOC"     : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle + \left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
+    "mode_dq"     : r"$\left\langle \Delta q \right\rangle$",
+    "mode_chi_dbdz"  : r"$\left\langle\chi \partial_z \overline{b} \right\rangle$",
+    "mode_chi_dbdz_product"  : r"$\left\langle\chi\right\rangle \left\langle\partial_z \overline{b} \right\rangle$",
+    "mode_ui_adv"  : r"$\left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
+    "mode_ZOC"     : r"$\left\langle\partial_z \overline{b}^{\mathrm{eff}} \right\rangle + \left\langle u_i \frac{b_e - b_w}{L_b} \right\rangle$",
 }
 
 units = {
     "psi_fixed"   : "[Sv]",
-    "mode1_chi"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
-    "mode1_psi"     : "[Sv]",
-    "mode1_ui_adv"  : r"[Sv]",
-    "mode1_ZOC"     : r"[Sv]",
+    "mode_chi"     : r"[$ \mathrm{Sv} / \left( 1000 \mathrm{km}\right)$]",
+    "mode_psi"     : "[Sv]",
+    "mode_ui_adv"  : r"[Sv]",
+    "mode_ZOC"     : r"[Sv]",
 
-    "mode1_s_eff"   : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
+    "mode_s_eff"   : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "s1000_hlat"  : r"[ $ \times 10^{-5} \mathrm{s}^{-2} $]",
     "db_ns"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
-    "mode1_db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
+    "mode_db_ew"       : r"[ $ \times 10^{-3} \mathrm{m} / \mathrm{s}^{2} $]",
     "cvt_e"       : r"",
     "cvt_w"       : r"",
     "d_cvt"       : r"",
-    "mode1_dq"                : r"[ $ \times 10^{-12} \mathrm{m} / \mathrm{s}^{2} $]",
-    "mode1_chi_dbdz"          : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
-    "mode1_chi_dbdz_product"  : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode_dq"                : r"[ $ \times 10^{-12} \mathrm{m} / \mathrm{s}^{2} $]",
+    "mode_chi_dbdz"          : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
+    "mode_chi_dbdz_product"  : r"[ $ \times 10^{-12} \mathrm{m}^2 / \mathrm{s}^{3} $]",
 
 }
 

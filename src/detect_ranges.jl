@@ -4,7 +4,7 @@
 
 
 
-function detectRanges(arr, include_prev=True)
+function detectRanges(arr, include_prev=false)
 
     vals = []
     rngs = []
@@ -16,8 +16,9 @@ function detectRanges(arr, include_prev=True)
     detect_val = 0.0
 
     extra_include = 0
-    if include_prev:
+    if include_prev
         extra_include = -1
+    end
 
     for i in 1:N
     

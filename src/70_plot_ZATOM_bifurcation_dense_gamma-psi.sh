@@ -16,8 +16,8 @@ python3 src/plot_bifur_analysis.py --folder \
     --auto-color \
     --param gamma \
     --param-rng -0.01 0.16  \
-    --varnames "mode1_psi" \
-    --mode1-psi-rng 1.0 4.5 \
+    --varnames "mode_psi" \
+    --mode-psi-rng 1.0 4.5 \
     --output-bifur "figures/ZATOM_dense_gamma-psi.svg" \
     --legend-loc "center right" \
     --residue-threshold 3e-10 \

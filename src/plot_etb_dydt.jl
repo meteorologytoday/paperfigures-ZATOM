@@ -160,6 +160,6 @@ if parsed["output"] != ""
     fig.savefig(parsed["output"], dpi=300)
 end
 
-plt.show()
+#plt.show()
 
 

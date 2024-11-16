@@ -5,6 +5,8 @@ include("ZATOM_calculation_setup.jl")
 
 
 println("Loading PyPlot")
+println("Setting backend as Agg...")
+ENV["MPLBACKEND"]="agg"
 using PyPlot
 plt = PyPlot
 println("Done")

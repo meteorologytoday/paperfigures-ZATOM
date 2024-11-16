@@ -96,6 +96,8 @@ p_lower_bound = 1 / ( μ + ϵ )
 
 
 println("Loading PyPlot")
+println("Setting backend as Agg...")
+ENV["MPLBACKEND"]="agg"
 using PyPlot
 plt = PyPlot
 println("Done")
@@ -140,4 +142,4 @@ ax.annotate("\$ P = \\left(p_c, \\tilde{\\xi}_c \\right) = \\left( \\frac{1}{\\m
 fig.savefig("figures/figure-etb_bifur_phase.svg", dpi=300)
 
 println("Showing figure...")
-plt.show()
+#plt.show()

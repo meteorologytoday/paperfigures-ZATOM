@@ -37,6 +37,8 @@ digits = Dict(
 ν = 1.0
 
 println("Loading PyPlot")
+println("Setting backend as Agg...")
+ENV["MPLBACKEND"]="agg"
 using PyPlot
 plt = PyPlot
 println("Done")
@@ -136,4 +138,4 @@ ax.text(0.05, 0.95, "(a)", size=25, va="top", ha="left", transform=ax.transAxes)
 #ax.legend(loc="center right",)
 fig.savefig("figures/figure-etb_bifur_p.svg", dpi=300)
 
-plt.show()
+#plt.show()

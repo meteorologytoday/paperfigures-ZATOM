@@ -17,12 +17,9 @@ mkdir -p $finalfig_svg_dir
 
 echo "Making final figures... "
 
-
+echo "Copying static files"
 cp $fig_static_dir/model.svg $fig_dir/
 cp $fig_static_dir/model_physics.svg $fig_dir/
-
-
-
 
 echo "Doing merging : analytical extended two-box model"
 svg_stack.py                        \
@@ -30,13 +27,6 @@ svg_stack.py                        \
     figures/figure-etb_bifur_p.svg  \
     figures/figure-etb_bifur_xi.svg \
     > figures/merged-stommel_bifurcation_analytical.svg
-
-
-#echo "Doing merging : regime diagrams"
-#convert \( figures/regime_diagrams_comparison_xi_0.00_gamma_0.00.png \) \
-#    \( figures/regime_diagrams_comparison_xi_0.65_gamma_0.00.png \) -gravity North +append \
-#     figures/regime_diagrams_comparison.png
-
 
 echo "Doing merging : freshwater forcing and cartoon"
 svg_stack.py \
@@ -52,7 +42,7 @@ svg_stack.py \
     figures/figure-etb_dydt-b.svg \
     > figures/merged-etb_dydt.svg
 
-echo "Doing merging : freshwater forcing and cartoon"
+echo "Doing merging : Bifurcation in both spaces "
 svg_stack.py \
     --direction=h \
     $fig_dir/ZATOM_dense_gamma-psi.svg \
@@ -70,11 +60,7 @@ name_pairs=(
     merged-etb_dydt.svg                           fig08
     merged-stommel_bifurcation_analytical.svg     fig09
     regime_diagrams_comparison.svg                fig10
-#    ZATOM_bifur_gamma_xi.png                      fig08
-
-#    figure-etb_bifur_phase.png                    fig10
-#    fwf_dijkstra.png                              fig11
-#    figure-approx_dijkstra.png                    fig12
+    figure-etb_bifur_phase.svg                    figD1
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))
