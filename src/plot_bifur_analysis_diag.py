@@ -491,7 +491,7 @@ if not args.dont_plot_dpsidt_decomp:
         _ax_twinx.plot(x, y, zorder=1, linestyle=linestyle, **kw_label, linewidth=2)
     """
 
-    _ax.set_title("(%s) Decomp of $ \\partial \\left \\langle \\tilde{\\psi}^{%d} \\right \\rangle / \\partial t$" % (args.thumbnail_numbering[ax_idx-1], args.mode, ))
+    _ax.set_title("(%s) Decomp of $  \\left \\langle \\partial \\tilde{\\psi}^{%d} / \\partial t \\right \\rangle$" % (args.thumbnail_numbering[ax_idx-1], args.mode, ))
 
 
 if not args.dont_plot_chi:
@@ -599,7 +599,7 @@ if not args.dont_plot_dchidt_decomp:
     _ax.legend(bbox_to_anchor=(1.02, 1.0), ncol=1, loc='upper left', fontsize=12)
     _ax.set_ylabel("[$ \\mathrm{Sv} \\cdot \\mathrm{year}^{-1} \\cdot \\left(1000 \\, \\mathrm{km}\\right)^{-1}$]")
      
-    _ax.set_title("(%s) Decomp of $ \\partial \\left \\langle \\tilde{\\chi}^{%d} \\right \\rangle / \\partial t$" % (args.thumbnail_numbering[ax_idx-1], args.mode, ))
+    _ax.set_title("(%s) Decomp of $ \\left \\langle \\partial \\tilde{\\chi}^{%d} / \\partial t \\right \\rangle $" % (args.thumbnail_numbering[ax_idx-1], args.mode, ))
 
 
 for _ax in ax_flat:

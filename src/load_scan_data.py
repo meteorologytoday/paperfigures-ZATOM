@@ -88,6 +88,7 @@ def loadScanData(folder, loaded_varnames, load_coor=True, residue_threshold=np.n
     # Remove nan
     if np.isfinite(residue_threshold):
         valid_idx = concat_dataset["res"] < residue_threshold
+        valid_idx[0] = True # A hard fix. We need to plot the first point. This should be better fixed in ZATOM code when producing output
         for varname in loaded_varnames:
             
             selector = [valid_idx,]

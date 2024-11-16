@@ -26,7 +26,7 @@ python3 src/plot_bifur_analysis.py --folder \
     --param xi              \
     --param-rng -7.5  0     \
     --varnames "mode_psi"  \
-    --mode-psi-rng 1 4.5 \
+    --mode-psi-rng 2.0 5.0 \
     --output-bifur "figures/ZATOM_dense_xi-psi.svg" \
     --thumbnail-skip 1 \
     --legend-loc "upper left" \

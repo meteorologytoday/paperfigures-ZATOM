@@ -17,7 +17,7 @@ python3 src/plot_bifur_analysis.py --folder \
     --param gamma \
     --param-rng -0.01 0.16  \
     --varnames "mode_psi" \
-    --mode-psi-rng 1.0 4.5 \
+    --mode-psi-rng 2.0 5.0 \
     --output-bifur "figures/ZATOM_dense_gamma-psi.svg" \
     --legend-loc "center right" \
     --residue-threshold 3e-10 \
