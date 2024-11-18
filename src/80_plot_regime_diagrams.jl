@@ -150,7 +150,9 @@ println("L = $L")
 println("t_d = $t_d")
 println("V = $V")
 
+etb_dims=Dict()
 
+#=
 etb_dims = Dict(
 
     "etb_zatom" => ETBDims(
@@ -228,7 +230,7 @@ etb_dims = Dict(
 
 
 )
-
+=#
 
 function generate_bnds_p(ξs, ed :: ETBDims)
 
@@ -321,11 +323,6 @@ for (k, ed) in etb_dims
     ξs, p_left_bnd, p_right_bnd = generate_bnds_p(ξs_all, ed)
     ps, ξ_left_bnd, ξ_right_bnd = generate_bnds_ξ(ps_all, ed)
 
-
-    #println("ps_all = ", ps_all)
-    #println("ξ_left_bnd = ", ξ_left_bnd)
-    #println("ξ_right_bnd = ", ξ_right_bnd)
-
     γ_left_bnd  = p_left_bnd  * ed.factors.p2γSv
     γ_right_bnd = p_right_bnd * ed.factors.p2γSv
     γs          = ps          * ed.factors.p2γSv
@@ -335,15 +332,7 @@ for (k, ed) in etb_dims
     ξ_right_bnd .+= ed.ξ0
     ξs          .+= ed.ξ0
 
-    #println("γs = ", γs)
-    #println("ξ_left_bnd = ", ξ_left_bnd)
-    #println("ξ_right_bnd = ", ξ_right_bnd)
-        
     println("Upper limit for ξ = μ/ν + ξ0 = $(ed.μ / ed.ν + ed.ξ0)")
-
-
-    #println("ξ0 = ", ed.ξ0)
-    #println("ξs + ξ0 = ", ξs .+ ed.ξ0)
 
     data[k] = Dict(
         "ξ_bnds" => (ξ_left_bnd, ξ_right_bnd),
@@ -357,7 +346,7 @@ for (k, ed) in etb_dims
 
 end
 
-
+#=
 regimes["etb_zatom"] = Dict(
         "label"     => "ETBM",
 )
@@ -381,7 +370,7 @@ regimes["etb_zatom_xi"] = Dict(
 regimes["etb_zatom_xi_0"] = Dict(
         "label"     => "ETBM with \$ \\xi_0 \$ increase by \$0.5\$ ",
 )
-
+=#
 
 
 
@@ -450,11 +439,13 @@ function shpPoly2MatplotPoly(poly, kwarg)
 end
 
 println("Loading PyPlot")
+println("Setting backend as Agg...")
+ENV["MPLBACKEND"]="agg"
 using PyPlot
 plt = PyPlot
 println("Done")
 
-plot_cases = ["standard", "etb_zatom", "etb_zatom_eps0", "etb_zatom_V0.8", "etb_zatom_xi_0"]
+plot_cases = ["standard",] 
 fcs =        [ "none", "none", "none", "none", "none", "none"]
 ecs =        [ "black", "red", "blue", "green", "orange", "gray"]
 hatches =    [ "..", "..", "\\\\", "//", "||", "||"]
@@ -465,8 +456,8 @@ ax.set_xlabel("\$\\gamma\$ [Sv]", fontsize=25)
 ax.set_ylabel("\$\\xi\$", fontsize=25)
 ax.grid(alpha=0.5)
 
-ax.set_ylim([-6, -3])
-ax.set_xlim([0.0, 0.15])
+ax.set_ylim([-6, -3.5])
+ax.set_xlim([0.0, 0.12])
 
 for (k, key) in enumerate(plot_cases)
 
@@ -586,8 +577,6 @@ for (k, key) in enumerate(plot_cases)
 
 end
 
-ax.legend(loc="lower right")
+fig.savefig(format("figures/regime_diagrams.svg"), dpi=300)
 
-fig.savefig(format("figures/regime_diagrams_comparison.svg"), dpi=300)
-
-plt.show()
+#plt.show()

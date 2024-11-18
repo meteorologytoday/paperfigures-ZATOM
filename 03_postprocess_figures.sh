@@ -35,13 +35,6 @@ svg_stack.py \
     $fig_static_dir/fwf_cartoon.svg \
     > $fig_dir/merged-forcing.svg
 
-echo "Doing merging : extended two-box model dydt plots"
-svg_stack.py \
-    --direction=h \
-    figures/figure-etb_dydt-a.svg \
-    figures/figure-etb_dydt-b.svg \
-    > figures/merged-etb_dydt.svg
-
 echo "Doing merging : Bifurcation in both spaces "
 svg_stack.py \
     --direction=h \
@@ -57,10 +50,7 @@ name_pairs=(
     ZATOM_state_diff.svg                          fig05
     ZATOM_bifur_diag_xi-400.svg                   fig06
     merged-ZATOM_dense_bifur.svg                  fig07
-    merged-etb_dydt.svg                           fig08
-    merged-stommel_bifurcation_analytical.svg     fig09
-    regime_diagrams_comparison.svg                fig10
-    figure-etb_bifur_phase.svg                    figD1
+    regime_diagrams.svg                           fig08
 )
 
 N=$(( ${#name_pairs[@]} / 2 ))
