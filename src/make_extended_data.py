@@ -17,6 +17,20 @@ S2b_factor = - alpha_S * g0 / rho0
 def TS2b(T, S):
     return T * T2b_factor + S * S2b_factor
 
+def mode_integration(d, wgt, axis=-1):
+
+    if axis == -1:
+        axis = len(d.shape)-1
+
+    return np.sum(d * wgt, axis=axis)
+
+def yavg(d, wgt, axis=-1):
+
+    if axis == -1:
+        axis = len(d.shape)-1
+
+    return np.average(d, weights=wgt, axis=axis)
+
 # Variables dimension assumes to be:
 # (Sample, X, Y, Z)
 
@@ -59,6 +73,18 @@ def makeExtendedData(data, coor, lat_s = 40.0, lat_n = 68.0):
     mode_1_dz_weight_W = - (2 / H) * np.sin( coor["z_W"] * np.pi / H) * coor["dz_W"]
     
     print("Total depth H = ", H)
+
+    # ui component
+    dbdiffdt_dueto_ui = data["ui"] * (data["be"] - data["bw"]) / Lw
+    data["mode1_ui_adv"] = yavg(
+        mode_integration(
+            dbdiffdt_dueto_ui,
+            wgt = mode_1_dz_weight_T,
+        )
+    )
+    s_eff_vint = np.sum(s_eff_W * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
+    data["mode1_s_eff"] = np.average( s_eff_vint, weights=coor["cos_lat"], axis=1)
+ 
 
     #b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
     b_eff  = (1 - beta) * data["bw"] + data["be"] * Lambda
@@ -167,19 +193,6 @@ def computeConvectivity(flags):
 
 
 
-def mode_integration(d, wgt, axis=-1):
-
-    if axis == -1:
-        axis = len(d.shape)-1
-
-    return np.sum(d * wgt, axis=axis)
-
-def yavg(d, wgt, axis=-1):
-
-    if axis == -1:
-        axis = len(d.shape)-1
-
-    return np.average(d, weights=wgt, axis=axis)
 
 # This function computes the exact terms for diagnostic relationship
 def makeExtendedData2(data, coor, lat_s = 40.0, lat_n = 68.0, verbose = False):
@@ -265,13 +278,9 @@ def makeExtendedData2(data, coor, lat_s = 40.0, lat_n = 68.0, verbose = False):
         ),
         wgt=coor["cos_lat"],
     )
-
-
-
-
     
+    new_data["mode1_dbdiffdt_dueto_ZOC"] = MOC_vert_adv + MOC_horz_adv
 
- 
     # `SS` stands for "source and sink"
     SS_T = data["X_SS_"][:, 0, :, :, :]
     SS_S = data["X_SS_"][:, 1, :, :, :]

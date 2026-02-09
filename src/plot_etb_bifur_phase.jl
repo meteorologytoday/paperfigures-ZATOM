@@ -88,7 +88,7 @@ p_left_bnd, p_right_bnd = generate_bnds_p(ξs)
 ξ_left_bnd, ξ_right_bnd = generate_bnds_ξ(ps)
 
 ξ_upper_bound = μ/ν
-ξ_lower_bound = - μ/ν * ( μ + ϵ - 1 )
+ξ_lower_bound = - μ/ν * ( μ + ϵ - 1 ) / (μ + ϵ)
 
 ξ_critical = μ * (1 - ϵ) / ( ν * ( μ + 1 ) )
 

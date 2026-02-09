@@ -3,11 +3,11 @@
 res=8
 
 python3 src/plot_bifur_analysis.py --folder \
-   ./data/continuation_data_fixed_gamma_20240908/batch_60/output_redo_balanced_tanh/CM_gamma00000005_pos/lb$res  \
-   ./data/continuation_data_fixed_gamma_20240908/batch_60/output_redo_balanced_tanh/CM_gamma00000025_neg/lb$res  \
-   ./data/continuation_data_fixed_gamma_20240908/batch_60/output_redo_balanced_tanh/CM_gamma00000050_neg/lb$res  \
-   ./data/continuation_data_fixed_gamma_20240908/batch_60/output_redo_balanced_tanh/CM_gamma00000075_neg/lb$res  \
-   ./data/continuation_data_fixed_gamma_20240908/batch_60/output_redo_balanced_tanh/CM_gamma00000100_neg/lb$res  \
+   ./data/continuation_data_fixed_gamma/batch_60/output_redo_balanced_tanh/CM_gamma00000005_pos/lb$res  \
+   ./data/continuation_data_fixed_gamma/batch_60/output_redo_balanced_tanh/CM_gamma00000025_neg/lb$res  \
+   ./data/continuation_data_fixed_gamma/batch_60/output_redo_balanced_tanh/CM_gamma00000050_neg/lb$res  \
+   ./data/continuation_data_fixed_gamma/batch_60/output_redo_balanced_tanh/CM_gamma00000075_neg/lb$res  \
+   ./data/continuation_data_fixed_gamma/batch_60/output_redo_balanced_tanh/CM_gamma00000100_neg/lb$res  \
     --no-legend                \
     --text \
         '$\gamma=.005\,\mathrm{Sv}$'   \

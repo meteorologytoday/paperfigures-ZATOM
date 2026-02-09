@@ -76,6 +76,11 @@ def loadScanData(folder, loaded_varnames, load_coor=True):
         coor["dz_W"][-1] = coor["dz_T"][-1]
 
         coor["dy_T"] = coor["y_V"][1:]  - coor["y_V"][:-1]
+        coor["dy_V"] = np.zeros(coor["y_V"].shape)
+        coor["dy_V"][1:-1] = (coor["dy_T"][:-1] + coor["dy_T"][1:]) / 2.0
+        coor["dy_V"][0] = coor["dy_T"][0]
+        coor["dy_V"][-1] = coor["dy_T"][-1]
+
         coor["dA_T"] = coor["dy_T"][:, None] * coor["dz_T"][None, :]
         coor["cos_lat"] = np.cos(coor["y_T"])
         coor["sin_lat"] = np.sin(coor["y_T"])
