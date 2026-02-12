@@ -3,8 +3,8 @@
 res=8
 
 python3 src/plot_bifur_analysis.py --folder \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000400_pos/lb$res  \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000440_pos/lb$res  \
+   ./data/continuation_data_fixed_xi/batch_60/output_redo_balanced_tanh/CM_xi-0000400_pos/lb$res  \
+   ./data/continuation_data_fixed_xi/batch_60/output_redo_balanced_tanh/CM_xi-0000440_pos/lb$res  \
     --legend '$\xi=-4$' '$\xi=-4.4$' \
     --colors "black" "red" \
     --param gamma \
