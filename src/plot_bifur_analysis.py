@@ -112,7 +112,7 @@ elif args.param == "xi":
 data_to_delete = []
 data = []
 coor = None
-loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable"]
+loaded_varnames = ["Psib", "chi", param, "be", "bw", "qw", "qe", "res", "stable", "ui"]
 for i, folder in enumerate(folders):
 
     print("Loading the folder: %s" % (folder,))

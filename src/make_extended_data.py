@@ -44,7 +44,8 @@ def yavg(d, wgt, axis=-1):
     xxxx.nc file.
 """
 def makeExtendedData(data, coor, lat_s = 40.0, lat_n = 68.0):
-    
+    print("data => ", list(data.keys()))   
+ 
     Ns = data["Psib"].shape[0]
 
     data["bw_bnd"] = data["be"] + 2 * ( data["bw"] - data["be"] )
@@ -80,10 +81,11 @@ def makeExtendedData(data, coor, lat_s = 40.0, lat_n = 68.0):
         mode_integration(
             dbdiffdt_dueto_ui,
             wgt = mode_1_dz_weight_T,
-        )
+        ),
+        wgt=coor["cos_lat"],
     )
-    s_eff_vint = np.sum(s_eff_W * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
-    data["mode1_s_eff"] = np.average( s_eff_vint, weights=coor["cos_lat"], axis=1)
+#    s_eff_vint = np.sum(s_eff_W * mode_1_dz_weight_W[None, None, 1:-1], axis=2)
+#    data["mode1_s_eff"] = np.average( s_eff_vint, weights=coor["cos_lat"], axis=1)
  
 
     #b_mean = ( data["bw"] * Lw + data["be"] * Le ) / ( Lw + Le )
