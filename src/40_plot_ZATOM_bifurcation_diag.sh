@@ -6,7 +6,7 @@ res=8
 #    --plot-chi-rng 0.0 2.6 \
 
 python3 src/plot_bifur_analysis_diag.py --folder \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000440_pos/lb$res  \
+   ./data/continuation_data_fixed_xi/batch_60/output_redo_balanced_tanh/CM_xi-0000440_pos/lb$res  \
     --plot-param-rng -0.005 0.125 \
     --param gamma \
     --param-rng -0.01 0.12  \
@@ -23,7 +23,7 @@ python3 src/plot_bifur_analysis_diag.py --folder \
     --no-display
  
 python3 src/plot_bifur_analysis_diag.py --folder \
-   ./data/continuation_data_fixed_xi_20240908/batch_60/output_redo_balanced_tanh/CM_xi-0000400_pos/lb$res  \
+   ./data/continuation_data_fixed_xi/batch_60/output_redo_balanced_tanh/CM_xi-0000400_pos/lb$res  \
     --plot-param-rng -0.005 0.125 \
     --param gamma \
     --param-rng -0.01 0.12  \
