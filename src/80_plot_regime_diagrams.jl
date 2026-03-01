@@ -1,10 +1,13 @@
 using Formatting
 using Roots
 using PyCall
+using Printf
 
+@printf("Loading python libraries... \n")
 shp_geo = pyimport("shapely.geometry")
 shp_ops = pyimport("shapely.ops")
 plt_patches = pyimport("matplotlib.patches")
+@printf("Done \n")
 
 include("ZATOM_regimes.jl")
 include("boundary_detect_algo.jl")
@@ -438,12 +441,7 @@ function shpPoly2MatplotPoly(poly, kwarg)
     return plt_patches.Polygon(poly_xy; kwarg...)
 end
 
-println("Loading PyPlot")
-println("Setting backend as Agg...")
-ENV["MPLBACKEND"]="agg"
-using PyPlot
-plt = PyPlot
-println("Done")
+using Plots
 
 plot_cases = ["standard",] 
 fcs =        [ "none", "none", "none", "none", "none", "none"]
