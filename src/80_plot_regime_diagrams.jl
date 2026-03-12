@@ -1,6 +1,7 @@
 using Formatting
 using Roots
 using PyCall
+using Printf
 
 shp_geo = pyimport("shapely.geometry")
 shp_ops = pyimport("shapely.ops")
@@ -577,6 +578,8 @@ for (k, key) in enumerate(plot_cases)
 
 end
 
-fig.savefig(format("figures/regime_diagrams.svg"), dpi=300)
+filename = "figures/regime_diagrams.svg"
+@printf("Output file: %s\n", filename)
+fig.savefig(filename, dpi=300)
 
 #plt.show()
