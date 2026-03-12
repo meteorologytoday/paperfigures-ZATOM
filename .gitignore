@@ -5,4 +5,4 @@
 *.ini
 data/*
 __pycache__/
-!figures_static/
+!figures_static/*.svg
